@@ -75,6 +75,8 @@ void init_get() {
 }
 
 int main() {
+    std::cout << "Luke Dekan\n";
+    std::cout << "R11766388";
     init_put();
     init_get();
     return 0;
