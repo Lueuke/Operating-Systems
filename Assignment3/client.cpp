@@ -15,8 +15,8 @@ void init_put() {
     CURL* curl = curl_easy_init();
     if (curl) {
 	struct curl_slist *headers = NULL;
-        // Set the request data to the integer value 1024
-        std::string data = "1024";
+        // Set the request data to the integer value 3360
+        std::string data = "3360";
 	
 	headers = curl_slist_append(headers, "Content-Type: application/json");
 
@@ -76,7 +76,7 @@ void init_get() {
 
 int main() {
     std::cout << "Luke Dekan\n";
-    std::cout << "R11766388";
+    std::cout << "R11766388\n" << std::endl
     init_put();
     init_get();
     return 0;
