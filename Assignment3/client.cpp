@@ -1,14 +1,14 @@
 
 /*
 =============================================================================
-Title : example.cpp
-Description : This is an example program.
-Author : errees (R#123456)
-Date : 01/01/2001
+Title : client.cpp
+Description : This program makes API request using Curl commands .
+Author : Luke Dekan (R#11766388)
+Date : 2/22/2024
 Version : 1.0
 Usage : Compile and run this program using the GNU C++ compiler
 Notes : This example program has no requirements.
-C++ Version : Specify your C++ version
+C++ Version : 6.3.0
 =============================================================================
 */
 
@@ -109,6 +109,24 @@ int main() {
 
     init_put("initialize",3360);
     init_put("modify",4);
+
+    int get_value = init_get("initialize");
+    int modify_value = init_get("modify");
+
+    cout << "3360 Value from Initialize via GET" << get_value;
+
+    cout << "4 Value from modify via GET" << modify_value;
+
+    init_put("initialize",get_value);
+
+    init_put("modify",modify_value);
+
+     int get_value = init_get("initialize");
+     int modify_value = init_get("modify");
+
+     cout << "Value from Initialize via GET" << get_value;
+
+    cout << "Value from modify via GET" << modify_value;
 
     init_get();
     return 0;
