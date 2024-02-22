@@ -1,34 +1,54 @@
+
+/*
+=============================================================================
+Title : example.cpp
+Description : This is an example program.
+Author : errees (R#123456)
+Date : 01/01/2001
+Version : 1.0
+Usage : Compile and run this program using the GNU C++ compiler
+Notes : This example program has no requirements.
+C++ Version : Specify your C++ version
+=============================================================================
+*/
+
 #include <iostream>
 #include <curl/curl.h>
 
+using namespace std;
+
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    ((string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
 
-void init_put() {
+void init_put(string endpoint,int value) {
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
+
+    string url = "http://localhost:5000/";
+
+    url += endpoint;
 
     // Create a curl handle
     CURL* curl = curl_easy_init();
     if (curl) {
 	struct curl_slist *headers = NULL;
         // Set the request data to the integer value 3360
-        std::string data = "3360";
+        string data = value;
 	
-	headers = curl_slist_append(headers, "Content-Type: application/json");
+	    headers = curl_slist_append(headers, "Content-Type: application/json");
 
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
-        curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5000/initialize");
-	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+	    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
 
         // Perform the PUT request
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
-            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
         }
 
         // Cleanup the curl handle
@@ -38,46 +58,58 @@ void init_put() {
 }
  
 
-void init_get() {  
+void init_get(string endpoint) {  
  
+    int value;
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
+
+    string url = "http://localhost:5000/";
+
+    url += endpoint;
 
     // Create a new curl handle for the GET request
     // Create a curl handle
     CURL* curl = curl_easy_init();
     if (curl) {
         // Set the URL for the GET request
-        curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5000/initialize");
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 
         // Create a string buffer to hold the response data
-        std::string buffer;
+        string buffer;
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 	
         // Perform the GET request
         CURLcode res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
         }
+
+        istringstream(buffer) >> value;
 
         // Cleanup the curl handle
         curl_easy_cleanup(curl);
 
         // Print the response body
-        std::cout << "\nResponse body: " << buffer << std::endl;
+        cout << "\nResponse body: " << buffer;
         
     }
 
     // Cleanup libcurl
     curl_global_cleanup();
+
+    return value;
 }
 
 int main() {
-    std::cout << "Luke Dekan\n";
-    std::cout << "R11766388\n" << std::endl
-    init_put();
+    cout << "Luke Dekan\n";
+    cout << "R11766388\n";
+
+    init_put("initialize",3360);
+    init_put("modify",4);
+
     init_get();
     return 0;
 }
