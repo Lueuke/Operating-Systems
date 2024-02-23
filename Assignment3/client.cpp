@@ -1,4 +1,3 @@
-
 /*
 =============================================================================
 Title : client.cpp
@@ -11,8 +10,9 @@ Notes : This example program has no requirements.
 C++ Version : 6.3.0
 =============================================================================
 */
-
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <curl/curl.h>
 
 using namespace std;
@@ -23,7 +23,7 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
     return size * nmemb;
 }
 
-void init_put(string endpoint,int value) {
+void init_put(string endpoint, int value) {
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -34,15 +34,15 @@ void init_put(string endpoint,int value) {
     // Create a curl handle
     CURL* curl = curl_easy_init();
     if (curl) {
-	struct curl_slist *headers = NULL;
+        struct curl_slist *headers = NULL;
         // Set the request data to the integer value 3360
-        string data = value;
-	
-	    headers = curl_slist_append(headers, "Content-Type: application/json");
+        string data = to_string(value);
 
-	    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
 
         // Perform the PUT request
@@ -58,9 +58,8 @@ void init_put(string endpoint,int value) {
 }
  
 
-void init_get(string endpoint) {  
- 
-    int value;
+int init_get(string endpoint) {  
+    int value = 0;
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -74,12 +73,12 @@ void init_get(string endpoint) {
     if (curl) {
         // Set the URL for the GET request
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 
         // Create a string buffer to hold the response data
         string buffer;
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-	
+    
         // Perform the GET request
         CURLcode res = curl_easy_perform(curl);
 
@@ -93,7 +92,7 @@ void init_get(string endpoint) {
         curl_easy_cleanup(curl);
 
         // Print the response body
-        cout << "\nResponse body: " << buffer;
+       	cout << "\nResponse body:" << buffer;
         
     }
 
@@ -107,28 +106,23 @@ int main() {
     cout << "Luke Dekan\n";
     cout << "R11766388\n";
 
-    init_put("initialize",3360);
-    init_put("modify",4);
+    init_put("initialize", 3360);
+    init_put("modify", 4);
 
     int get_value = init_get("initialize");
     int modify_value = init_get("modify");
 
-    cout << "3360 Value from Initialize via GET" << get_value;
+    cout << "\n3360 Value from Initialize via GET: " << get_value << endl;
+    cout << "4 Value from modify via GET: " << modify_value << endl;
 
-    cout << "4 Value from modify via GET" << modify_value;
+    init_put("initialize", get_value);
+    init_put("modify", modify_value);
 
-    init_put("initialize",get_value);
+    get_value = init_get("initialize");
+    modify_value = init_get("modify");
 
-    init_put("modify",modify_value);
+    cout << "\nValue from Initialize via GET: " << get_value << endl;
+    cout << "Value from modify via GET: " << modify_value << endl;
 
-     int get_value = init_get("initialize");
-     int modify_value = init_get("modify");
-
-     cout << "Value from Initialize via GET" << get_value;
-
-    cout << "Value from modify via GET" << modify_value;
-
-    init_get();
     return 0;
 }
-
