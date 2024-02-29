@@ -1,7 +1,7 @@
 /*
 =============================================================================
 Title : client.cpp
-Description : This program makes API request using Curl commands .
+Description : This program makes API request using Curl commands.
 Author : Luke Dekan (R#11766388)
 Date : 2/22/2024
 Version : 1.0
@@ -28,8 +28,10 @@ void init_put(string endpoint, int value) {
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
 
+    // Store the first part of the URL since only the endpoint is changing 
     string url = "http://localhost:5000/";
 
+    // Concat the endpoint from the function call to what command we want to use
     url += endpoint;
 
     // Create a curl handle
@@ -45,6 +47,7 @@ void init_put(string endpoint, int value) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
+
 
         // Perform the PUT request
         CURLcode res = curl_easy_perform(curl);
@@ -64,8 +67,10 @@ int init_get(string endpoint) {
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
 
+    // Store the first part of the URL since only the endpoint is changing 
     string url = "http://localhost:5000/";
 
+    // Concat the endpoint from the function call to what command we want to use
     url += endpoint;
 
     // Create a new curl handle for the GET request
@@ -86,15 +91,13 @@ int init_get(string endpoint) {
         if (res != CURLE_OK) {
             cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
         }
-
-        istringstream(buffer) >> value;
+        
+        // Store the value from the WRITEDATE into value to return 
+	    istringstream(buffer) >> value;
 
         // Cleanup the curl handle
         curl_easy_cleanup(curl);
 
-        // Print the response body
-       	cout << "\nResponse body:" << buffer;
-        
     }
 
     // Cleanup libcurl
@@ -104,24 +107,31 @@ int init_get(string endpoint) {
 }
 
 int main() {
+    // Print Name and R#
     cout << "Luke Dekan\n";
     cout << "R11766388\n";
 
+    // Sent the first Two Values 3360 and 4 Into PUt 
     init_put("initialize", 3360);
     init_put("modify", 4);
 
+    // Retrieve the Data from GET and Store the values for printing  
     int get_value = init_get("initialize");
     int modify_value = init_get("modify");
 
+    // Print Values
     cout << "\n3360 Value from Initialize via GET: " << get_value << endl;
     cout << "4 Value from modify via GET: " << modify_value << endl;
 
-    init_put("initialize", get_value);
-    init_put("modify", modify_value);
+    // Take the values from the GET put them back into the corresponding PUT command
+    init_put("initialize", modify_value);
+    init_put("modify", get_value);
 
+    // Retrieve the Data from GET and Store the values for printing 
     get_value = init_get("initialize");
     modify_value = init_get("modify");
 
+    // Print Values
     cout << "\nValue from Initialize via GET: " << get_value << endl;
     cout << "Value from modify via GET: " << modify_value << endl;
 
