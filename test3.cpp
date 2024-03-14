@@ -44,6 +44,46 @@ void processIntegers(const string& inputFile) {
         return;
     }
 
+    vector<int> evenNumbers, oddNumbers, positiveNumbers, negativeNumbers, squareNumbers, cubeNumbers;
+
+    string line;
+    while (getline(input, line)) {
+        int num = std::stoi(line);
+
+        if (isEven(num)) {
+            mtx.lock();
+            evenNumbers.push_back(num);
+            mtx.unlock();
+        }
+        if (isOdd(num)) {
+            mtx.lock();
+            oddNumbers.push_back(num);
+            mtx.unlock();
+        }
+        if (isPositive(num)) {
+            mtx.lock();
+            positiveNumbers.push_back(num);
+            mtx.unlock();
+        }
+        if (isNegative(num)) {
+            mtx.lock();
+            negativeNumbers.push_back(num);
+            mtx.unlock();
+        }
+        if (isSquare(num)) {
+            mtx.lock();
+            squareNumbers.push_back(num);
+            mtx.unlock();
+        }
+        if (isCube(num)) {
+            mtx.lock();
+            cubeNumbers.push_back(num);
+            mtx.unlock();
+        }
+    }
+
+    input.close();
+
     ofstream evenFile("even.out");
     ofstream oddFile("odd.out");
     ofstream positiveFile("positive.out");
@@ -57,43 +97,25 @@ void processIntegers(const string& inputFile) {
         return;
     }
 
-    string line;
-    while (getline(input, line)) {
-        int num = std::stoi(line);
-
-        if (isEven(num)) {
-            mtx.lock();
-            evenFile << num << endl;
-            mtx.unlock();
-        }
-        if (isOdd(num)) {
-            mtx.lock();
-            oddFile << num << endl;
-            mtx.unlock();
-        }
-        if (isPositive(num)) {
-            mtx.lock();
-            positiveFile << num << endl;
-            mtx.unlock();
-        }
-        if (isNegative(num)) {
-            mtx.lock();
-            negativeFile << num << endl;
-            mtx.unlock();
-        }
-        if (isSquare(num)) {
-            mtx.lock();
-            squareFile << num << endl;
-            mtx.unlock();
-        }
-        if (isCube(num)) {
-            mtx.lock();
-            cubeFile << num << endl;
-            mtx.unlock();
-        }
+    for (int num : evenNumbers) {
+        evenFile << num << endl;
+    }
+    for (int num : oddNumbers) {
+        oddFile << num << endl;
+    }
+    for (int num : positiveNumbers) {
+        positiveFile << num << endl;
+    }
+    for (int num : negativeNumbers) {
+        negativeFile << num << endl;
+    }
+    for (int num : squareNumbers) {
+        squareFile << num << endl;
+    }
+    for (int num : cubeNumbers) {
+        cubeFile << num << endl;
     }
 
-    input.close();
     evenFile.close();
     oddFile.close();
     positiveFile.close();
