@@ -28,13 +28,12 @@ bool isNegative(int num) {
 }
 
 bool isSquare(int num) {
-    int sqrt_num = sqrt(abs(num));
-    return sqrt_num * sqrt_num == abs(num);
+    return num >= 0 && sqrt(num) == floor(sqrt(num));
 }
 
 bool isCube(int num) {
-    int cube_root = cbrt(abs(num));
-    return cube_root * cube_root * cube_root == abs(num);
+    int cube_root = round(cbrt(abs(num)));
+    return cube_root * cube_root * cube_root == num;
 }
 
 void processIntegers(const string& inputFile) {
