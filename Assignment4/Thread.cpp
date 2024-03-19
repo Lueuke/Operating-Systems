@@ -38,10 +38,6 @@ bool isCube(int num) {
 
 void processIntegers(const string& inputFile) {
     ifstream input(inputFile);
-    if (!input.is_open()) {
-        cerr << "Error: Unable to open input file." << endl;
-        return;
-    }
 
     ofstream evenFile("even.out");
     ofstream oddFile("odd.out");
