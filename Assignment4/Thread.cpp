@@ -103,7 +103,7 @@ void processIntegers(const string& inputFile) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <path_to_source_file>" << endl;
+        cerr << "ERROR File cannot be found " << endl;
         return 1;
     }
 
