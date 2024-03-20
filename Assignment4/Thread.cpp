@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     // Open thte Input File
     string inputFile = argv[1];
 
-    // Start Processing the numbers 
+    // Start Processing the numbers using multithreading 
     thread processingThread(processIntegers, inputFile);
 
     processingThread.join();
