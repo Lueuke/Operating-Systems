@@ -1,8 +1,20 @@
+/*
+=============================================================================
+Title : Thread.cpp
+Description : This Program reads numbers from a file input then sorts them based on different parameters and puts them into a output file using Multithreading.
+Author : errees (R#11766388)
+Date : 03/19/2024
+Version : 1.0
+Usage : Compile and run this program using the GNU C++ compiler
+Notes : This example program has no requirements.
+C++ Version : C++20
+=============================================================================
+*/
+
 #include <iostream>
 #include <fstream>
 #include <thread>
 #include <mutex>
-#include <vector>
 #include <cmath>
 #include <string>
 #include <cstdlib>
@@ -45,12 +57,6 @@ void processIntegers(const string& inputFile) {
     ofstream negativeFile("negative.out");
     ofstream squareFile("square.out");
     ofstream cubeFile("cube.out");
-
-    if (!evenFile.is_open() || !oddFile.is_open() || !positiveFile.is_open() ||
-        !negativeFile.is_open() || !squareFile.is_open() || !cubeFile.is_open()) {
-        cerr << "Error: Unable to open output files." << endl;
-        return;
-    }
 
     string line;
     while (getline(input, line)) {
@@ -111,3 +117,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
