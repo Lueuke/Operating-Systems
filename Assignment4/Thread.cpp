@@ -11,6 +11,7 @@ C++ Version : C++20
 =============================================================================
 */
 
+// Import librarys we need
 #include <iostream>
 #include <fstream>
 #include <thread>
@@ -51,6 +52,7 @@ bool isCube(int num) {
 void processIntegers(const string& inputFile) {
     ifstream input(inputFile);
 
+    // Create the Output files 
     ofstream evenFile("even.out");
     ofstream oddFile("odd.out");
     ofstream positiveFile("positive.out");
@@ -104,13 +106,16 @@ void processIntegers(const string& inputFile) {
 }
 
 int main(int argc, char *argv[]) {
+    // Check for Input file 
     if (argc != 2) {
         cerr << "ERROR File cannot be found " << endl;
         return 1;
     }
 
+    // Open thte Input File
     string inputFile = argv[1];
 
+    // Start Processing the numbers 
     thread processingThread(processIntegers, inputFile);
 
     processingThread.join();
