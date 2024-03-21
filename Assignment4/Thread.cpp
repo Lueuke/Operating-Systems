@@ -68,6 +68,7 @@ void readingThread(const string& Inputfile)
 
 void processNumbersThread()
 {
+    // Create all the output files 
     ofstream evenFile("even.out");
     ofstream oddFile("odd.out");
     ofstream positiveFile("positive.out");
@@ -129,7 +130,7 @@ void processNumbersThread()
             squareFile << num.value << endl;
         }
         // Cubed Numbers
-        if (num.value^3 == floor(num.value^3)) 
+        if (round(cbrt(num.value)) == (num.value * num.value * num.value)) 
         {
             lock_guard<mutex> lock(mutexlock);
             cubedFile << num.value << endl;
