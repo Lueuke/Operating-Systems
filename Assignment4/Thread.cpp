@@ -22,7 +22,7 @@ C++ Version : C++20
 #include <cmath>
 using namespace std;
 
-// Create the mutex lock , Condition variable , 
+// Create the mutex lock , Condition variable , and Bool to show status of reading 
 mutex mutexlock;
 condition_variable bufferReady;
 bool readingFinished = false;
