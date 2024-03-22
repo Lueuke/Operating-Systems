@@ -2,7 +2,7 @@
 =============================================================================
 Title : Thread.cpp
 Description : This is program takes input from file and process the numbers determined by different parameters and use Multithreading to process them into the output files.
-Author : errees (R#11766388)
+Author : Luke Dekan (R#11766388)
 Date : 03/20/2024
 Version : 1.0
 Usage : Compile and run this program using the GNU C++ compiler
