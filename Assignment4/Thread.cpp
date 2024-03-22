@@ -28,14 +28,14 @@ condition_variable bufferReady;
 bool readingFinished = false;
 
 // Create a Structure that stores the number value and the line number the value is at 
-struct Number 
+struct Numbers 
 {
     int value;
     int lineNumber;
 };
 
 // Create a Buffer using a Queue 
-queue<Number> buffer;
+queue<Numbers> buffer;
 
 void readingThread(const string& Inputfile)
 {
@@ -77,7 +77,7 @@ void processNumbersThread()
     ofstream cubedFile("cube.out");
 
     while (true) {
-        Number num;
+        Numbers num;
         {
             unique_lock<mutex> lock(mutexlock);
 
@@ -130,7 +130,7 @@ void processNumbersThread()
             squareFile << num.value << endl;
         }
         // Cubed Numbers
-        if (round(cbrt(num.value)) == (num.value * num.value * num.value)) 
+        if (cbrt(num.value)==floor(cbrt(num.value)))
         {
             lock_guard<mutex> lock(mutexlock);
             cubedFile << num.value << endl;
