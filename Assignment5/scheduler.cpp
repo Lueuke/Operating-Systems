@@ -31,15 +31,15 @@ int main(int argc, char *argv[])
 
     string line;
 
-    int lineCount = 0;  
+    int NumberOfProcess = 0;  
 
     while (getline(Input,line)) 
-    {  // Loop through each line in the file
-      lineCount++;  // Incrementing line count for each line read
+    {  
+      NumberOfProcess++;  
     }
 
 
-   // Time proccessList[lineCount];
+   // Time proccessList[NumberOfProcess];
 
 
    
