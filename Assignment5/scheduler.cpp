@@ -4,6 +4,14 @@
 
 using namespace std;
 
+struct Time {
+    string name; 
+    int ArriveTime;
+    int ServiceTime;
+};
+
+
+
 int main(int argc, char *argv[])
 {
     // Check for Input File
