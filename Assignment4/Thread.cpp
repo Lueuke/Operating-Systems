@@ -140,14 +140,15 @@ void processNumbersThread()
 
 int main(int argc, char *argv[])
 {
-    // Check for Input File
-    if (argc != 2) {
+    
+   if (argc != 2) {
         cout << "ERROR No input file" << argv[0] << endl;
         return 1;
     }
 
     // Get Input file
     string Inputfile = argv[1];
+    
 
     // Create Reader and Processing Threads
     thread reader(readingThread, Inputfile);
