@@ -11,6 +11,7 @@ struct ProcessName
     int ServiceTime; 
 };
 
+
 struct CompareServiceTime
     {
         bool operator()(const ProcessName& p1, const ProcessName& p2)
@@ -19,10 +20,12 @@ struct CompareServiceTime
         }
     };
 
+
+
 void FCFSScheduler(ifstream& inputFile)
 {
     // First Come First Serve Scheduler
-    ofstream FCFSOutput("fcfs.out");
+    ofstream FCFSOutput("Myfcfs.out");
     // Create queue for processes
     queue<ProcessName> ProcessQueue;
 
@@ -146,6 +149,53 @@ void ShortestProcessNext(ifstream& inputFile)
     }
 }
 
+void SRPScheduler(ifstream& inputFile)
+{
+    ofstream SRPOutput("Mysrt.out");
+
+    priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
+    vector<ProcessName> processes;
+
+    string name;
+    int arrivalTime;
+    int serviceTime;
+
+    while(inputFile >> name >> arrivalTime >> serviceTime) 
+    {
+        ProcessName process = {name, arrivalTime, serviceTime};
+        processes.push_back(process);
+    }
+
+    int currentTime = 0;
+    int index = 0;
+
+    while (!processes.empty() || !ProcessQueue.empty()) 
+    {
+        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) 
+        {
+            ProcessQueue.push(processes[index]);
+            index++;
+        }
+
+        if (!ProcessQueue.empty()) 
+        {
+            ProcessName process = ProcessQueue.top();
+            ProcessQueue.pop();
+
+            for (int i = 0; i < process.ServiceTime / 10; i++) 
+            {
+                SRPOutput << process.name << endl;
+            }
+
+            currentTime += process.ServiceTime;
+        }
+        else 
+        {
+            currentTime = processes[index].ArrivalTime;
+        }
+    }
+}
+
 int main()
 {
 
@@ -158,9 +208,13 @@ int main()
         return 1;
     }
 
-    ShortestProcessNext(Input);
-    //FCFSScheduler(Input);
+    // Working 
+    //ShortestProcessNext(Input);
+    FCFSScheduler(Input);
+    //SRPScheduler(Input);
+    // Not working
     //RoundRobinScheduler(Input,10);
+    
     
 
     return 0;
