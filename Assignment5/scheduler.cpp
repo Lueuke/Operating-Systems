@@ -1,19 +1,23 @@
-
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <queue>
-#include <windows.h>
 
 using namespace std;
-
-
 struct ProcessName
 {
     string name;
     int ArrivalTime;
     int ServiceTime; 
 };
+
+struct CompareServiceTime
+    {
+        bool operator()(const ProcessName& p1, const ProcessName& p2)
+        {
+            return p1.ServiceTime > p2.ServiceTime;
+        }
+    };
 
 void FCFSScheduler(ifstream& inputFile)
 {
@@ -46,9 +50,7 @@ void FCFSScheduler(ifstream& inputFile)
         QueueCopy.pop();
     }
 
-
 }
-
 
 void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
 {
@@ -70,22 +72,76 @@ void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
     while (!ProcessQueue.empty()) 
     {
         ProcessName process = ProcessQueue.front();
+        
         ProcessQueue.pop();
-
         if (process.ServiceTime > timeQuantum)
         {
-            for (int i = 0; i < timeQuantum; i += timeQuantum) 
+            process.ServiceTime -= timeQuantum;
+            for (int i = 0; i < (timeQuantum / 10); i++) 
             {
                 RROutput10 << process.name << endl;
             }
+             
             ProcessQueue.push(process);
         }
         else
         {
-            for (int i = 0; i < process.ServiceTime; i += timeQuantum) 
+            for (int i = 0; i < process.ServiceTime / 10 ; i++) 
             {
                 RROutput10 << process.name << endl;
+                
             }
+        }
+    }
+
+}
+
+
+
+void ShortestProcessNext(ifstream& inputFile)
+{
+    // Shortest Process Next Scheduler
+    ofstream SPNOutput("Myspn.out");
+
+    priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
+    vector<ProcessName> processes;
+
+    string name;
+    int arrivalTime;
+    int serviceTime;
+
+    while(inputFile >> name >> arrivalTime >> serviceTime) 
+    {
+        ProcessName process = {name, arrivalTime, serviceTime};
+        processes.push_back(process);
+    }
+
+    int currentTime = 0;
+    int index = 0;
+
+    while (!processes.empty() || !ProcessQueue.empty()) 
+    {
+        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) 
+        {
+            ProcessQueue.push(processes[index]);
+            index++;
+        }
+
+        if (!ProcessQueue.empty()) 
+        {
+            ProcessName process = ProcessQueue.top();
+            ProcessQueue.pop();
+
+            for (int i = 0; i < process.ServiceTime / 10; i++) 
+            {
+                SPNOutput << process.name << endl;
+            }
+
+            currentTime += process.ServiceTime;
+        }
+        else 
+        {
+            currentTime = processes[index].ArrivalTime;
         }
     }
 }
@@ -102,8 +158,9 @@ int main()
         return 1;
     }
 
-    RoundRobinScheduler(Input,10);
+    ShortestProcessNext(Input);
     //FCFSScheduler(Input);
+    //RoundRobinScheduler(Input,10);
     
 
     return 0;
