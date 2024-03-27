@@ -11,16 +11,17 @@ struct ProcessName
     int ServiceTime; 
 };
 
+    string name;
+    int arrival;
+    int service;
 
-struct CompareServiceTime
+ struct CompareServiceTime
     {
         bool operator()(const ProcessName& p1, const ProcessName& p2)
         {
             return p1.ServiceTime > p2.ServiceTime;
         }
     };
-
-
 
 void FCFSScheduler(ifstream& inputFile)
 {
@@ -29,30 +30,18 @@ void FCFSScheduler(ifstream& inputFile)
     // Create queue for processes
     queue<ProcessName> ProcessQueue;
 
-    string name;
-    int arrivalTime;
-    int serviceTime;
-
-    while (inputFile >> name >> arrivalTime >> serviceTime) 
+    while (inputFile >> name >> arrival >> service) 
     {
-        ProcessName process = {name, arrivalTime, serviceTime};
+        ProcessName process = {name, arrival, service};
         ProcessQueue.push(process);
-    }
-
-    queue<ProcessName> QueueCopy = ProcessQueue;
-
-    while (!QueueCopy.empty()) 
-    {
-        ProcessName process = QueueCopy.front();
-        int intervals = process.ServiceTime / 10;
+        ProcessName process1 = ProcessQueue.front();
+        int intervals = process1.ServiceTime / 10;
         for (int i = 0; i < intervals; i++) 
         {
-            FCFSOutput << process.name << endl;
+            FCFSOutput << process1.name << endl;
         }
-    
-        QueueCopy.pop();
+        ProcessQueue.pop();
     }
-
 }
 
 void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
@@ -210,7 +199,7 @@ int main()
 
     // Working 
     //ShortestProcessNext(Input);
-    //FCFSScheduler(Input);
+    FCFSScheduler(Input);
     //SRPScheduler(Input);
     // Not working
     //RoundRobinScheduler(Input,10);
