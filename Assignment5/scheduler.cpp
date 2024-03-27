@@ -47,7 +47,7 @@ void FCFSScheduler(ifstream& inputFile)
 void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
 {
     // Round Robin Scheduler
-    ofstream RROutput10("rr10.out");
+    ofstream RROutput10("Myrr10.out");
     
     queue<ProcessName> ProcessQueue;
 
@@ -87,8 +87,6 @@ void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
     }
 
 }
-
-
 
 void ShortestProcessNext(ifstream& inputFile)
 {
@@ -185,6 +183,31 @@ void SRPScheduler(ifstream& inputFile)
     }
 }
 
+void HRRN(ifstream& inputFile)
+{
+    ofstream HRRNOutput("Myhrrn.out");
+
+    queue<ProcessName> ProcessQueue;
+
+
+    int currentTime = 0;
+
+    while (inputFile >> name >> arrival >> service) 
+    {
+        ProcessName process = {name, arrival, service};
+        ProcessQueue.push(process);
+
+        ProcessName process = ProcessQueue.front();
+        int intervals = process.ServiceTime / 10;
+
+
+    }
+
+
+
+}
+
+
 int main()
 {
 
@@ -199,12 +222,12 @@ int main()
 
     // Working 
     //ShortestProcessNext(Input);
-    FCFSScheduler(Input);
+    //FCFSScheduler(Input);
     //SRPScheduler(Input);
     // Not working
     //RoundRobinScheduler(Input,10);
     
-    
+    HRRN(Input);
 
     return 0;
 }
