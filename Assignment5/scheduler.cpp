@@ -210,7 +210,7 @@ int main()
 
     // Working 
     //ShortestProcessNext(Input);
-    FCFSScheduler(Input);
+    //FCFSScheduler(Input);
     //SRPScheduler(Input);
     // Not working
     //RoundRobinScheduler(Input,10);
