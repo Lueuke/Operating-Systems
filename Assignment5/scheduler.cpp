@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <queue>
+#include <windows.h>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ struct ProcessName
 void FCFSScheduler(ifstream& inputFile)
 {
     // First Come First Serve Scheduler
-     ofstream FCFSOutput("fcfs.out");
+    ofstream FCFSOutput("fcfs.out");
     // Create queue for processes
     queue<ProcessName> ProcessQueue;
 
@@ -36,7 +37,7 @@ void FCFSScheduler(ifstream& inputFile)
     while (!QueueCopy.empty()) 
     {
         ProcessName process = QueueCopy.front();
-        int intervals = process.ServiceTime;
+        int intervals = process.ServiceTime / 10;
         for (int i = 0; i < intervals; i++) 
         {
             FCFSOutput << process.name << endl;
@@ -48,12 +49,12 @@ void FCFSScheduler(ifstream& inputFile)
 
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    string Inputfile = argv[1];
-    
-    ifstream Input("input.in");
 
+    string Inputfile = "input.in";
+    
+    ifstream Input(Inputfile);
     // Check for Input File
     if (!Input) {
         cout << "ERROR No input file" << endl;

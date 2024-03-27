@@ -47,7 +47,8 @@
         "fstream": "cpp",
         "sstream": "cpp",
         "ratio": "cpp",
-        "condition_variable": "cpp"
+        "condition_variable": "cpp",
+        "xstring": "cpp"
     },
     "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\g++.exe"
 }
