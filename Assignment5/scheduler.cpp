@@ -55,6 +55,8 @@ void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
     int arrivalTime;
     int serviceTime;
 
+    // Add Remaining time 
+
     while (inputFile >> name >> arrivalTime >> serviceTime) 
     {
         ProcessName process = {name, arrivalTime, serviceTime};
@@ -225,9 +227,9 @@ int main()
     //FCFSScheduler(Input);
     //SRPScheduler(Input);
     // Not working
-    //RoundRobinScheduler(Input,10);
+    RoundRobinScheduler(Input,10);
     
-    HRRN(Input);
+    //HRRN(Input);
 
     return 0;
 }
