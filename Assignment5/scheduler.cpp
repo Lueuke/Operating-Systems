@@ -63,7 +63,7 @@ void RoundRobinScheduler(ifstream& inputFile)
         allProcesses.push_back(process);
     }
 
-    int currentTime = 0;
+    int currentTime = 10;
     int index = 0;
 
     while (!allProcesses.empty() || !readyQueue.empty()) 
@@ -79,7 +79,7 @@ void RoundRobinScheduler(ifstream& inputFile)
             ProcessName process = readyQueue.front();
             readyQueue.pop();
 
-            process.remainingTime -= 1;  // Decrease the remaining time by one
+            process.remainingTime -= 10;  // Decrease the remaining time by one
             RROutput << process.name << endl;
 
             if (process.remainingTime > 0)  // If the process has not finished
@@ -88,7 +88,7 @@ void RoundRobinScheduler(ifstream& inputFile)
             }
         }
 
-        currentTime += 1;  // Increase the current time by one
+        currentTime += 10;  // Increase the current time by one
     }
 }
 /*
