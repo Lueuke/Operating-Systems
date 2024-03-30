@@ -7,13 +7,16 @@ using namespace std;
 struct ProcessName
 {
     string name;
-    int ArrivalTime;
+    int arrivalTime;
     int ServiceTime; 
+    int remainingTime;
+
 };
 
     string name;
     int arrival;
     int service;
+    int remain;
 
  struct CompareServiceTime
     {
@@ -44,52 +47,51 @@ void FCFSScheduler(ifstream& inputFile)
     }
 }
 
-void RoundRobinScheduler(ifstream& inputFile,int timeQuantum)
+void RoundRobinScheduler(ifstream& inputFile)
 {
-    // Round Robin Scheduler
-    ofstream RROutput10("Myrr10.out");
-    
-    queue<ProcessName> ProcessQueue;
+    ofstream RROutput("Myrr.out");
 
+    vector<ProcessName> allProcesses;
+    queue<ProcessName> readyQueue;
     string name;
     int arrivalTime;
     int serviceTime;
 
-    // Add Remaining time 
-
-    while (inputFile >> name >> arrivalTime >> serviceTime) 
+    while(inputFile >> name >> arrivalTime >> serviceTime) 
     {
-        ProcessName process = {name, arrivalTime, serviceTime};
-        ProcessQueue.push(process);
+        ProcessName process = {name, arrivalTime, serviceTime, serviceTime};  // Initialize remainingTime to serviceTime
+        allProcesses.push_back(process);
     }
 
-    while (!ProcessQueue.empty()) 
-    {
-        ProcessName process = ProcessQueue.front();
-        
-        ProcessQueue.pop();
-        if (process.ServiceTime > timeQuantum)
-        {
-            process.ServiceTime -= timeQuantum;
-            for (int i = 0; i < (timeQuantum / 10); i++) 
-            {
-                RROutput10 << process.name << endl;
-            }
-             
-            ProcessQueue.push(process);
-        }
-        else
-        {
-            for (int i = 0; i < process.ServiceTime / 10 ; i++) 
-            {
-                RROutput10 << process.name << endl;
-                
-            }
-        }
-    }
+    int currentTime = 0;
+    int index = 0;
 
+    while (!allProcesses.empty() || !readyQueue.empty()) 
+    {
+        while (index < allProcesses.size() && allProcesses[index].arrivalTime <= currentTime) 
+        {
+            readyQueue.push(allProcesses[index]);
+            allProcesses.erase(allProcesses.begin() + index);
+        }
+
+        if (!readyQueue.empty()) 
+        {
+            ProcessName process = readyQueue.front();
+            readyQueue.pop();
+
+            process.remainingTime -= 1;  // Decrease the remaining time by one
+            RROutput << process.name << endl;
+
+            if (process.remainingTime > 0)  // If the process has not finished
+            {
+                readyQueue.push(process);  // Add it back to the end of the queue
+            }
+        }
+
+        currentTime += 1;  // Increase the current time by one
+    }
 }
-
+/*
 void ShortestProcessNext(ifstream& inputFile)
 {
     // Shortest Process Next Scheduler
@@ -199,8 +201,8 @@ void HRRN(ifstream& inputFile)
         ProcessName process = {name, arrival, service};
         ProcessQueue.push(process);
 
-        ProcessName process = ProcessQueue.front();
-        int intervals = process.ServiceTime / 10;
+        ProcessName process1 = ProcessQueue.front();
+        int intervals = process1.ServiceTime / 10;
 
 
     }
@@ -208,7 +210,7 @@ void HRRN(ifstream& inputFile)
 
 
 }
-
+*/
 
 int main()
 {
@@ -227,7 +229,7 @@ int main()
     //FCFSScheduler(Input);
     //SRPScheduler(Input);
     // Not working
-    RoundRobinScheduler(Input,10);
+    RoundRobinScheduler(Input);
     
     //HRRN(Input);
 
