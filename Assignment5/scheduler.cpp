@@ -25,7 +25,7 @@ struct ProcessName
             return p1.ServiceTime > p2.ServiceTime;
         }
     };
-
+/*
 void FCFSScheduler(ifstream& inputFile)
 {
     // First Come First Serve Scheduler
@@ -115,9 +115,6 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum)
     
 }
 
-
-
-/*
 void ShortestProcessNext(ifstream& inputFile)
 {
     // Shortest Process Next Scheduler
@@ -237,6 +234,23 @@ void HRRN(ifstream& inputFile)
 
 }
 */
+
+void Feedback(ifstream& inputFile)
+{
+    ofstream FeedbackOutput("Myfeedback.out");
+
+    queue<ProcessName> ProcessQueue;
+
+    int currentTime = 0;
+
+    while (inputFile >> name >> arrival >> service) 
+    {
+        ProcessName process = {name, arrival, service};
+        ProcessQueue.push(process);
+    }
+
+    
+}
 
 int main()
 {
