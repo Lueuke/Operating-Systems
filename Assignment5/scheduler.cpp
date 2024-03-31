@@ -124,6 +124,10 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
     // Shortest Process Next Scheduler
     // ofstream SPNOutput("Myspn.out");
 
+    if (inputFile.fail()) {
+        cout << "Error reading from input file in SPN" << endl;
+    }
+
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
 
@@ -281,18 +285,19 @@ int main()
 
     // Working
     
-    ShortestProcessNext(Input, SPNOutput);
+    FCFSScheduler(Input, FCFSOutput);
+
     Input.clear();
     Input.seekg(0, ios::beg);
-   
-    FCFSScheduler(Input, FCFSOutput);
+    ShortestProcessNext(Input, SPNOutput);
+
    
 
     /*
     SRPScheduler(Input);
     Input.clear();
     Input.seekg(0, ios::beg);
-    RoundRobinScheduler(Input,10);
+ 
     Input.clear();
     Input.seekg(0, ios::beg);
     RoundRobinScheduler(Input,40);
