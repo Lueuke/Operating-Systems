@@ -160,10 +160,14 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
 
 }
 
-void SRPScheduler(ifstream& inputFile)
+void SRPScheduler(ifstream& inputFile , ofstream& SRPOutput)
 {
-    ofstream SRPOutput("Mysrt.out");
 
+    if (inputFile.fail())
+    {
+        cout << "Error: File not found" << endl;
+        return;
+    }
      string name;
     int arrival;
     int service;
@@ -276,16 +280,15 @@ int main()
     Input.clear();
     Input.seekg(0, ios::beg);
     ShortestProcessNext(Input, SPNOutput);
-        
+    
+    SRPScheduler(Input, SRPOutput);
+    
+
+    /*
+    
     Input.clear();
     Input.seekg(0, ios::beg);
     RoundRobinScheduler(Input,10, RROutput10);
-   
-
-    /*
-    SRPScheduler(Input);
-    Input.clear();
-    Input.seekg(0, ios::beg);
  
     */
 
