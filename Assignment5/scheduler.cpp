@@ -47,9 +47,22 @@ void FCFSScheduler(ifstream& inputFile)
     }
 }
 
-void RoundRobinScheduler(ifstream& inputFile)
+void RoundRobinScheduler(ifstream& inputFile,int Quantum)
 {
-    ofstream RROutput("Myrr.out");
+
+    int currentTime = 0;
+
+    ofstream RROutput;
+
+    if (Quantum == 10)
+    {
+        RROutput.open("Myrr10.out");
+        int currentTime = 10;
+    }
+    else 
+    {
+        RROutput.open("Myrr40.out");
+    }
 
     vector<ProcessName> allProcesses;
     queue<ProcessName> readyQueue;
@@ -63,8 +76,9 @@ void RoundRobinScheduler(ifstream& inputFile)
         allProcesses.push_back(process);
     }
 
-    int currentTime = 10;
+    
     int index = 0;
+    int timeQuantum = Quantum;
 
     while (!allProcesses.empty() || !readyQueue.empty()) 
     {
@@ -79,18 +93,30 @@ void RoundRobinScheduler(ifstream& inputFile)
             ProcessName process = readyQueue.front();
             readyQueue.pop();
 
-            process.remainingTime -= 10;  // Decrease the remaining time by one
-            RROutput << process.name << endl;
+            int ProcesserTime = min(timeQuantum, process.remainingTime);
 
-            if (process.remainingTime > 0)  // If the process has not finished
+            process.remainingTime -= ProcesserTime;
+            currentTime += ProcesserTime;
+
+            for (int i = 0; i < ProcesserTime / 10; i++)
             {
-                readyQueue.push(process);  // Add it back to the end of the queue
+            RROutput << process.name << endl;
+            }
+            if (process.remainingTime > 0)  
+            {
+                readyQueue.push(process);  
             }
         }
-
-        currentTime += 10;  // Increase the current time by one
+        else 
+        {
+            currentTime += 10;
+        }        
     }
+    
 }
+
+
+
 /*
 void ShortestProcessNext(ifstream& inputFile)
 {
@@ -224,13 +250,18 @@ int main()
         return 1;
     }
 
-    // Working 
-    //ShortestProcessNext(Input);
-    //FCFSScheduler(Input);
-    //SRPScheduler(Input);
+    /* Working 
+    ShortestProcessNext(Input);
+    FCFSScheduler(Input);
+    SRPScheduler(Input);
+    RoundRobinScheduler(Input,10);
+    //Reset the file pointer
+    Input.clear();
+    Input.seekg(0);
+    RoundRobinScheduler(Input,40);
+    */
+
     // Not working
-    RoundRobinScheduler(Input);
-    
     //HRRN(Input);
 
     return 0;
