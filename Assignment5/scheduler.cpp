@@ -13,7 +13,6 @@ struct ProcessName
 
 };
 
-   
 
  struct CompareServiceTime
     {
@@ -24,11 +23,10 @@ struct ProcessName
     };
 
 
-
-void FCFSScheduler(ifstream& inputFile)
+void FCFSScheduler(ifstream& inputFile, ofstream& FCFSOutput)
 {
     // First Come First Serve Scheduler
-    ofstream FCFSOutput("Myfcfs.out");
+    // ofstream FCFSOutput("Myfcfs.out");
     // Create queue for processes
     queue<ProcessName> ProcessQueue;
 
@@ -121,10 +119,10 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum)
     
 }
 
-void ShortestProcessNext(ifstream& inputFile)
+void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
 {
     // Shortest Process Next Scheduler
-    ofstream SPNOutput("Myspn.out");
+    // ofstream SPNOutput("Myspn.out");
 
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
@@ -275,13 +273,19 @@ int main()
         return 1;
     }
 
+    ofstream FCFSOutput("Myfcfs.out");
+    ofstream RROutput10("Myrr10.out");
+    ofstream RROutput40("Myrr40.out");
+    ofstream SPNOutput("Myspn.out");
+    ofstream SRPOutput("Mysrt.out");
+
     // Working
     
-    ShortestProcessNext(Input);
+    ShortestProcessNext(Input, SPNOutput);
     Input.clear();
     Input.seekg(0, ios::beg);
    
-    FCFSScheduler(Input);
+    FCFSScheduler(Input, FCFSOutput);
    
 
     /*
