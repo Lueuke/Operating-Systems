@@ -7,16 +7,13 @@ using namespace std;
 struct ProcessName
 {
     string name;
-    int arrivalTime;
+    int ArrivalTime;
     int ServiceTime; 
     int remainingTime;
 
 };
 
-    string name;
-    int arrival;
-    int service;
-    int remain;
+   
 
  struct CompareServiceTime
     {
@@ -25,13 +22,19 @@ struct ProcessName
             return p1.ServiceTime > p2.ServiceTime;
         }
     };
-/*
+
+
+
 void FCFSScheduler(ifstream& inputFile)
 {
     // First Come First Serve Scheduler
     ofstream FCFSOutput("Myfcfs.out");
     // Create queue for processes
     queue<ProcessName> ProcessQueue;
+
+    string name;
+    int arrival;
+    int service;
 
     while (inputFile >> name >> arrival >> service) 
     {
@@ -45,12 +48,18 @@ void FCFSScheduler(ifstream& inputFile)
         }
         ProcessQueue.pop();
     }
+
 }
 
 void RoundRobinScheduler(ifstream& inputFile,int Quantum)
 {
 
     int currentTime = 0;
+    
+    string name;
+    int arrivalTime;
+    int serviceTime;
+
 
     ofstream RROutput;
 
@@ -66,10 +75,7 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum)
 
     vector<ProcessName> allProcesses;
     queue<ProcessName> readyQueue;
-    string name;
-    int arrivalTime;
-    int serviceTime;
-
+    
     while(inputFile >> name >> arrivalTime >> serviceTime) 
     {
         ProcessName process = {name, arrivalTime, serviceTime, serviceTime};  // Initialize remainingTime to serviceTime
@@ -82,7 +88,7 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum)
 
     while (!allProcesses.empty() || !readyQueue.empty()) 
     {
-        while (index < allProcesses.size() && allProcesses[index].arrivalTime <= currentTime) 
+        while (index < allProcesses.size() && allProcesses[index].ArrivalTime <= currentTime) 
         {
             readyQueue.push(allProcesses[index]);
             allProcesses.erase(allProcesses.begin() + index);
@@ -123,13 +129,14 @@ void ShortestProcessNext(ifstream& inputFile)
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
 
-    string name;
-    int arrivalTime;
-    int serviceTime;
+     string name;
+    int arrival;
+    int service;
+    int remain;
 
-    while(inputFile >> name >> arrivalTime >> serviceTime) 
+    while(inputFile >> name >> arrival >> service) 
     {
-        ProcessName process = {name, arrivalTime, serviceTime};
+        ProcessName process = {name, arrival, service};
         processes.push_back(process);
     }
 
@@ -161,22 +168,25 @@ void ShortestProcessNext(ifstream& inputFile)
             currentTime = processes[index].ArrivalTime;
         }
     }
+
+
 }
 
 void SRPScheduler(ifstream& inputFile)
 {
     ofstream SRPOutput("Mysrt.out");
 
+     string name;
+    int arrival;
+    int service;
+    int remain;
+
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
 
-    string name;
-    int arrivalTime;
-    int serviceTime;
-
-    while(inputFile >> name >> arrivalTime >> serviceTime) 
+    while(inputFile >> name >> arrival >> service) 
     {
-        ProcessName process = {name, arrivalTime, serviceTime};
+        ProcessName process = {name, arrival, service};
         processes.push_back(process);
     }
 
@@ -210,6 +220,7 @@ void SRPScheduler(ifstream& inputFile)
     }
 }
 
+/*
 void HRRN(ifstream& inputFile)
 {
     ofstream HRRNOutput("Myhrrn.out");
@@ -233,7 +244,6 @@ void HRRN(ifstream& inputFile)
 
 
 }
-*/
 
 void Feedback(ifstream& inputFile)
 {
@@ -249,8 +259,9 @@ void Feedback(ifstream& inputFile)
         ProcessQueue.push(process);
     }
 
-    
+
 }
+*/
 
 int main()
 {
@@ -264,19 +275,29 @@ int main()
         return 1;
     }
 
-    /* Working 
+    // Working
+    
     ShortestProcessNext(Input);
-    FCFSScheduler(Input);
-    SRPScheduler(Input);
-    RoundRobinScheduler(Input,10);
-    //Reset the file pointer
     Input.clear();
-    Input.seekg(0);
+    Input.seekg(0, ios::beg);
+   
+    FCFSScheduler(Input);
+   
+
+    /*
+    SRPScheduler(Input);
+    Input.clear();
+    Input.seekg(0, ios::beg);
+    RoundRobinScheduler(Input,10);
+    Input.clear();
+    Input.seekg(0, ios::beg);
     RoundRobinScheduler(Input,40);
     */
 
+    
+
     // Not working
     //HRRN(Input);
-
+    
     return 0;
 }
