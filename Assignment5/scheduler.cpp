@@ -274,24 +274,22 @@ int main()
     Input.clear();
     Input.seekg(0, ios::beg);
    
-    ShortestProcessNext(Input, SPNOutput);
-    
-    cout << "SPM" << endl;
+    SRPScheduler(Input, SRPOutput);
+ 
     
     Input.clear();
     Input.seekg(0, ios::beg);
-    SRPScheduler(Input, SRPOutput);
+    RoundRobinScheduler(Input,10, RROutput10);
     
 
     /*
     
     Input.clear();
     Input.seekg(0, ios::beg);
-    RoundRobinScheduler(Input,10, RROutput10);
+    SPNScheduler(Input, SPNOutput);
  
     */
 
-    
 
     // Not working
     //HRRN(Input);
