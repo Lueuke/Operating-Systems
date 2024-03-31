@@ -49,7 +49,7 @@ void FCFSScheduler(ifstream& inputFile, ofstream& FCFSOutput)
 
 }
 
-void RoundRobinScheduler(ifstream& inputFile,int Quantum)
+void RoundRobinScheduler(ifstream& inputFile,int Quantum, ofstream& RROutput)
 {
 
     int currentTime = 0;
@@ -58,19 +58,11 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum)
     int arrivalTime;
     int serviceTime;
 
-
-    ofstream RROutput;
-
     if (Quantum == 10)
     {
-        RROutput.open("Myrr10.out");
         int currentTime = 10;
     }
-    else 
-    {
-        RROutput.open("Myrr40.out");
-    }
-
+ 
     vector<ProcessName> allProcesses;
     queue<ProcessName> readyQueue;
     
@@ -121,12 +113,6 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum)
 
 void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
 {
-    // Shortest Process Next Scheduler
-    // ofstream SPNOutput("Myspn.out");
-
-    if (inputFile.fail()) {
-        cout << "Error reading from input file in SPN" << endl;
-    }
 
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
@@ -290,7 +276,10 @@ int main()
     Input.clear();
     Input.seekg(0, ios::beg);
     ShortestProcessNext(Input, SPNOutput);
-
+        
+    Input.clear();
+    Input.seekg(0, ios::beg);
+    RoundRobinScheduler(Input,10, RROutput10);
    
 
     /*
@@ -298,9 +287,6 @@ int main()
     Input.clear();
     Input.seekg(0, ios::beg);
  
-    Input.clear();
-    Input.seekg(0, ios::beg);
-    RoundRobinScheduler(Input,40);
     */
 
     
