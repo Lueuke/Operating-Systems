@@ -156,18 +156,12 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
             currentTime = processes[index].ArrivalTime;
         }
     }
-
-
+    return;
 }
 
 void SRPScheduler(ifstream& inputFile , ofstream& SRPOutput)
 {
 
-    if (inputFile.fail())
-    {
-        cout << "Error: File not found" << endl;
-        return;
-    }
      string name;
     int arrival;
     int service;
@@ -279,8 +273,13 @@ int main()
 
     Input.clear();
     Input.seekg(0, ios::beg);
+   
     ShortestProcessNext(Input, SPNOutput);
     
+    cout << "SPM" << endl;
+    
+    Input.clear();
+    Input.seekg(0, ios::beg);
     SRPScheduler(Input, SRPOutput);
     
 
