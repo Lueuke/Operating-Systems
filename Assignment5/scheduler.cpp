@@ -275,8 +275,7 @@ int main()
     Input.seekg(0, ios::beg);
    
     SRPScheduler(Input, SRPOutput);
- 
-    
+
     Input.clear();
     Input.seekg(0, ios::beg);
     RoundRobinScheduler(Input,10, RROutput10);
