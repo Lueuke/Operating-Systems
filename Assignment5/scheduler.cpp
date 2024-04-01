@@ -13,7 +13,6 @@ struct ProcessName
 
 };
 
-
  struct CompareServiceTime
     {
         bool operator()(const ProcessName& p1, const ProcessName& p2)
@@ -21,7 +20,6 @@ struct ProcessName
             return p1.ServiceTime > p2.ServiceTime;
         }
     };
-
 
 void FCFSScheduler(ifstream& inputFile, ofstream& FCFSOutput)
 {
@@ -46,6 +44,7 @@ void FCFSScheduler(ifstream& inputFile, ofstream& FCFSOutput)
         }
         ProcessQueue.pop();
     }
+    FCFSOutput.close();
 
 }
 
@@ -108,16 +107,18 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum, ofstream& RROutput)
             currentTime += 10;
         }        
     }
+
+    RROutput.close();
     
 }
 
 void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
 {
-
+    
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
 
-     string name;
+    string name;
     int arrival;
     int service;
     int remain;
@@ -130,6 +131,8 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
 
     int currentTime = 0;
     int index = 0;
+
+    cout << "Inside SPN" << endl;
 
     while (!processes.empty() || !ProcessQueue.empty()) 
     {
@@ -156,13 +159,13 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
             currentTime = processes[index].ArrivalTime;
         }
     }
-    return;
+return;
 }
 
 void SRPScheduler(ifstream& inputFile , ofstream& SRPOutput)
 {
-
-     string name;
+    
+    string name;
     int arrival;
     int service;
     int remain;
@@ -179,6 +182,7 @@ void SRPScheduler(ifstream& inputFile , ofstream& SRPOutput)
     int currentTime = 0;
     int index = 0;
 
+    return;
     while (!processes.empty() || !ProcessQueue.empty()) 
     {
         while (index < processes.size() && processes[index].ArrivalTime <= currentTime) 
@@ -201,9 +205,14 @@ void SRPScheduler(ifstream& inputFile , ofstream& SRPOutput)
         }
         else 
         {
-            currentTime = processes[index].ArrivalTime;
+            if (index < processes.size())
+            {
+                currentTime = processes[index].ArrivalTime;
+            }
         }
+       
     }
+    return;
 }
 
 /*
@@ -263,7 +272,7 @@ int main()
 
     ofstream FCFSOutput("Myfcfs.out");
     ofstream RROutput10("Myrr10.out");
-    ofstream RROutput40("Myrr40.out");
+    //ofstream RROutput40("Myrr40.out");
     ofstream SPNOutput("Myspn.out");
     ofstream SRPOutput("Mysrt.out");
 
@@ -273,22 +282,23 @@ int main()
 
     Input.clear();
     Input.seekg(0, ios::beg);
-   
-    SRPScheduler(Input, SRPOutput);
-
-    Input.clear();
-    Input.seekg(0, ios::beg);
+    
     RoundRobinScheduler(Input,10, RROutput10);
-    
 
-    /*
-    
+    // SRPS is and SPN is running forever 
     Input.clear();
     Input.seekg(0, ios::beg);
-    SPNScheduler(Input, SPNOutput);
- 
-    */
+    SRPScheduler(Input, SRPOutput);
+    
+    cout << "After SPRS" << endl;
 
+    Input.clear();
+    Input.seekg(0, ios::beg);
+    ShortestProcessNext(Input, SPNOutput);
+
+    cout << "After SPN" << endl;
+
+    
 
     // Not working
     //HRRN(Input);
