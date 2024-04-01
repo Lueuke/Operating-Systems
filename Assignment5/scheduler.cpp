@@ -162,58 +162,60 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
 return;
 }
 
-void SRPScheduler(ifstream& inputFile , ofstream& SRPOutput)
-{
-    
+void SRPScheduler(ifstream& inputFile, ofstream& SRPOutput) {
+    priority_queue<ProcessName, vector<ProcessName>, CompareServiceTime> ProcessQueue;
+    vector<ProcessName> processes;
+
     string name;
     int arrival;
     int service;
-    int remain;
 
-    priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
-    vector<ProcessName> processes;
-
-    while(inputFile >> name >> arrival >> service) 
-    {
-        ProcessName process = {name, arrival, service};
+    // Read processes from input file
+    while (inputFile >> name >> arrival >> service) {
+        ProcessName process = {name, arrival, service, service};
         processes.push_back(process);
     }
 
     int currentTime = 0;
-    int index = 0;
+    size_t index = 0;
 
-    return;
-    while (!processes.empty() || !ProcessQueue.empty()) 
-    {
-        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) 
-        {
+    // Continue until there are processes in the queue or waiting
+    while (!processes.empty() || !ProcessQueue.empty()) {
+        // Add processes to the priority queue that have arrived by the current time
+        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) {
             ProcessQueue.push(processes[index]);
             index++;
         }
 
-        if (!ProcessQueue.empty()) 
-        {
-            ProcessName process = ProcessQueue.top();
-            ProcessQueue.pop();
-
-            for (int i = 0; i < process.ServiceTime / 10; i++) 
-            {
-                SRPOutput << process.name << endl;
-            }
-
-            currentTime += process.ServiceTime;
+        // If there's no process in the queue and no more processes to add, exit the loop
+        if (ProcessQueue.empty()) {
+            if (index >= processes.size()) break;
+            currentTime = processes[index].ArrivalTime;
+            continue;
         }
-        else 
-        {
-            if (index < processes.size())
-            {
-                currentTime = processes[index].ArrivalTime;
-            }
+
+        // Get the process with the shortest service time
+        ProcessName currentProcess = ProcessQueue.top();
+        ProcessQueue.pop();
+
+        // Output the current process
+        SRPOutput << currentProcess.name << endl;
+
+        // Update current time and remaining time for the process
+        currentTime += currentProcess.ServiceTime;
+
+        // Check if the process has finished execution
+        if (currentProcess.ServiceTime > 10) {
+            // Decrement the remaining service time for the process
+            currentProcess.ServiceTime -= 10;
+            // Push the process back into the queue with updated service time
+            ProcessQueue.push(currentProcess);
         }
-       
     }
-    return;
+
+    SRPOutput.close();
 }
+
 
 /*
 void HRRN(ifstream& inputFile)
@@ -285,7 +287,6 @@ int main()
     
     RoundRobinScheduler(Input,10, RROutput10);
 
-    // SRPS is and SPN is running forever 
     Input.clear();
     Input.seekg(0, ios::beg);
     SRPScheduler(Input, SRPOutput);
