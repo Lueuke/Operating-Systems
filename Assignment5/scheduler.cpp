@@ -12,7 +12,6 @@ struct ProcessName
     int remainingTime;
 
 };
-
  struct CompareServiceTime
     {
         bool operator()(const ProcessName& p1, const ProcessName& p2)
@@ -358,6 +357,7 @@ int main(int argc, char* argv[])
     ofstream SPNOutput("spn.out");
     ofstream SRPOutput("srt.out");
     ofstream HRRNOutput("hrrn.out");
+    ofstream FeedbackOutput("Myfeedback");
    
     
     // Working
@@ -386,9 +386,11 @@ int main(int argc, char* argv[])
  
 
     // Not working
-    // ofstream FeedbackOutput("Myfeedback");
+   
 
-    // Feedback(Input,FeedbackOutput);   
+    Input.clear();
+    Input.seekg(0, ios::beg);
+    Feedback(Input,FeedbackOutput);   
 
     return 0;
 }
