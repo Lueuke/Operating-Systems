@@ -159,7 +159,6 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput) {
     SPNOutput.close();
 }
 
-
 void SRPScheduler(ifstream& inputFile, ofstream& SRPOutput) {
     priority_queue<ProcessName, vector<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
@@ -214,49 +213,135 @@ void SRPScheduler(ifstream& inputFile, ofstream& SRPOutput) {
     SRPOutput.close();
 }
 
-
-/*
-void HRRN(ifstream& inputFile)
+void Feedback(ifstream& inputFile , ofstream& FeedbackOutput)
 {
-    ofstream HRRNOutput("Myhrrn.out");
 
+    queue<ProcessName> priorityQueues[7];
+
+    string name;
+    int arrival;
+    int service;
+
+    while (inputFile >> name >> arrival >> service) 
+    {
+        ProcessName process = {name, arrival, service};
+        
+        // Determine initial priority based on arrival time
+        int priority;
+        if (arrival < 10) {
+            priority = 0;
+        } else if (arrival < 20) {
+            priority = 1;
+        } else if (arrival < 30) {
+            priority = 2;
+        } else if (arrival < 40) {
+            priority = 3;
+        } else if (arrival < 50) {
+            priority = 4;
+        } else if (arrival < 60) {
+            priority = 5;
+        } else {
+            priority = 6;
+        }
+
+        priorityQueues[priority].push(process);
+    }
+
+    bool allEmpty = true;
+do {
+    allEmpty = true;
+    for(int priority = 0; priority <= 6; priority++)
+    {
+        for (int i = 0; i < 7; i++) 
+        {
+            if (!priorityQueues[i].empty()) 
+            {
+                allEmpty = false;
+                break;
+            }
+        }
+        if (!priorityQueues[priority].empty())
+        {
+            ProcessName process = priorityQueues[priority].front();
+            priorityQueues[priority].pop();
+            FeedbackOutput << process.name << endl;
+            process.ServiceTime -= 10;
+
+            if (process.ServiceTime > 0) 
+            {   
+                if (priority < 6) 
+                {
+                    priorityQueues[priority + 1].push(process);
+                } 
+                else 
+                {
+                    priorityQueues[priority].push(process);
+                }
+            }
+        }
+    }
+} while (!allEmpty);
+
+}
+
+
+void HRRN(ifstream& inputFile , ofstream& HRRNOutput)
+{
     queue<ProcessName> ProcessQueue;
-
-
-    int currentTime = 0;
+    string name;
+    int arrival;
+    int service;
 
     while (inputFile >> name >> arrival >> service) 
     {
         ProcessName process = {name, arrival, service};
         ProcessQueue.push(process);
-
-        ProcessName process1 = ProcessQueue.front();
-        int intervals = process1.ServiceTime / 10;
-
-
     }
-
-
-
-}
-
-void Feedback(ifstream& inputFile)
-{
-    ofstream FeedbackOutput("Myfeedback.out");
-
-    queue<ProcessName> ProcessQueue;
 
     int currentTime = 0;
-
-    while (inputFile >> name >> arrival >> service) 
+    while (!ProcessQueue.empty()) 
     {
-        ProcessName process = {name, arrival, service};
-        ProcessQueue.push(process);
+        double highestResponseRatio = -1;
+        ProcessName selectedProcess;
+        queue<ProcessName> tempQueue;
+
+        // Calculate the waiting time and response ratio for each process
+        while (!ProcessQueue.empty()) 
+        {
+            ProcessName process = ProcessQueue.front();
+            ProcessQueue.pop();
+            tempQueue.push(process);
+
+            int waitingTime = currentTime - process.ArrivalTime;
+            double responseRatio = (waitingTime + process.ServiceTime) / (double)process.ServiceTime;
+
+            if (responseRatio > highestResponseRatio) 
+            {
+                highestResponseRatio = responseRatio;
+                selectedProcess = process;
+            }
+        }
+
+        // Run the selected process and remove it from the queue
+        for (int i = 0; i < selectedProcess.ServiceTime / 10; i++)
+        {
+            HRRNOutput << selectedProcess.name << endl;
+        }
+        currentTime += selectedProcess.ServiceTime;
+
+        // Restore the original queue, excluding the selected process
+        while (!tempQueue.empty()) 
+        {
+            ProcessName process = tempQueue.front();
+            tempQueue.pop();
+
+            if (process.name != selectedProcess.name) 
+            {
+                ProcessQueue.push(process);
+            }
+        }
     }
-
-
 }
-*/
 
 int main()
 {
@@ -270,12 +355,13 @@ int main()
         return 1;
     }
 
-    ofstream FCFSOutput("Myfcfs.out");
+    /*ofstream FCFSOutput("Myfcfs.out");
     ofstream RROutput10("Myrr10.out");
     //ofstream RROutput40("Myrr40.out");
     ofstream SPNOutput("Myspn.out");
     ofstream SRPOutput("Mysrt.out");
-
+   
+    
     // Working
     
     FCFSScheduler(Input, FCFSOutput);
@@ -295,10 +381,18 @@ int main()
 
     cout << "After SPN" << endl;
 
+    */
+
+    ofstream HRRNOutput("Myhrrn.out");
+    HRRN(Input, HRRNOutput);
     
 
     // Not working
-    //HRRN(Input);
+    // ofstream FeedbackOutput("Myfeedback");
+
+    // Feedback(Input,FeedbackOutput);   
+
+    
     
     return 0;
 }
