@@ -112,9 +112,7 @@ void RoundRobinScheduler(ifstream& inputFile,int Quantum, ofstream& RROutput)
     
 }
 
-void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
-{
-    
+void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput) {
     priority_queue<ProcessName, deque<ProcessName>, CompareServiceTime> ProcessQueue;
     vector<ProcessName> processes;
 
@@ -123,44 +121,44 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput)
     int service;
     int remain;
 
-    while(inputFile >> name >> arrival >> service) 
-    {
+    while(inputFile >> name >> arrival >> service) {
         ProcessName process = {name, arrival, service};
         processes.push_back(process);
     }
 
     int currentTime = 0;
-    int index = 0;
+    size_t index = 0;
 
     cout << "Inside SPN" << endl;
 
-    while (!processes.empty() || !ProcessQueue.empty()) 
-    {
-        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) 
-        {
+    while (!processes.empty() || !ProcessQueue.empty() || index < processes.size()) {
+        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) {
             ProcessQueue.push(processes[index]);
             index++;
         }
 
-        if (!ProcessQueue.empty()) 
-        {
+        if (!ProcessQueue.empty()) {
             ProcessName process = ProcessQueue.top();
             ProcessQueue.pop();
 
-            for (int i = 0; i < process.ServiceTime / 10; i++) 
-            {
+            for (int i = 0; i < process.ServiceTime / 10; i++) {
                 SPNOutput << process.name << endl;
             }
 
             currentTime += process.ServiceTime;
         }
-        else 
-        {
-            currentTime = processes[index].ArrivalTime;
+        else {
+            if (index < processes.size()) {
+                currentTime = processes[index].ArrivalTime;
+            } else {
+                break; // No more processes to execute
+            }
         }
     }
-return;
+
+    SPNOutput.close();
 }
+
 
 void SRPScheduler(ifstream& inputFile, ofstream& SRPOutput) {
     priority_queue<ProcessName, vector<ProcessName>, CompareServiceTime> ProcessQueue;
@@ -290,8 +288,6 @@ int main()
     Input.clear();
     Input.seekg(0, ios::beg);
     SRPScheduler(Input, SRPOutput);
-    
-    cout << "After SPRS" << endl;
 
     Input.clear();
     Input.seekg(0, ios::beg);
