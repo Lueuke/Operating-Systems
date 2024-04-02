@@ -51,16 +51,11 @@ void FCFSScheduler(ifstream& inputFile, ofstream& FCFSOutput)
 void RoundRobinScheduler(ifstream& inputFile,int Quantum, ofstream& RROutput)
 {
 
-    int currentTime = 0;
+    int currentTime = 10;
     
     string name;
     int arrivalTime;
     int serviceTime;
-
-    if (Quantum == 10)
-    {
-        int currentTime = 10;
-    }
  
     vector<ProcessName> allProcesses;
     queue<ProcessName> readyQueue;
@@ -128,8 +123,6 @@ void ShortestProcessNext(ifstream& inputFile , ofstream& SPNOutput) {
 
     int currentTime = 0;
     size_t index = 0;
-
-    cout << "Inside SPN" << endl;
 
     while (!processes.empty() || !ProcessQueue.empty() || index < processes.size()) {
         while (index < processes.size() && processes[index].ArrivalTime <= currentTime) {
@@ -199,14 +192,19 @@ void SRPScheduler(ifstream& inputFile, ofstream& SRPOutput) {
         SRPOutput << currentProcess.name << endl;
 
         // Update current time and remaining time for the process
-        currentTime += currentProcess.ServiceTime;
+        currentTime += 10;
+        currentProcess.ServiceTime -= 10;
 
         // Check if the process has finished execution
-        if (currentProcess.ServiceTime > 10) {
-            // Decrement the remaining service time for the process
-            currentProcess.ServiceTime -= 10;
+        if (currentProcess.ServiceTime > 0) {
             // Push the process back into the queue with updated service time
             ProcessQueue.push(currentProcess);
+        }
+
+        // Add processes to the priority queue that have arrived by the current time
+        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) {
+            ProcessQueue.push(processes[index]);
+            index++;
         }
     }
 
@@ -284,7 +282,6 @@ do {
 
 }
 
-
 void HRRN(ifstream& inputFile , ofstream& HRRNOutput)
 {
     queue<ProcessName> ProcessQueue;
@@ -343,7 +340,7 @@ void HRRN(ifstream& inputFile , ofstream& HRRNOutput)
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 
     string Inputfile = "input.in";
@@ -355,11 +352,12 @@ int main()
         return 1;
     }
 
-    /*ofstream FCFSOutput("Myfcfs.out");
-    ofstream RROutput10("Myrr10.out");
-    //ofstream RROutput40("Myrr40.out");
-    ofstream SPNOutput("Myspn.out");
-    ofstream SRPOutput("Mysrt.out");
+    ofstream FCFSOutput("fcfs.out");
+    ofstream RROutput10("rr_10.out");
+    ofstream RROutput40("rr_40.out");
+    ofstream SPNOutput("spn.out");
+    ofstream SRPOutput("srt.out");
+    ofstream HRRNOutput("hrrn.out");
    
     
     // Working
@@ -368,8 +366,11 @@ int main()
 
     Input.clear();
     Input.seekg(0, ios::beg);
-    
     RoundRobinScheduler(Input,10, RROutput10);
+
+    Input.clear();
+    Input.seekg(0, ios::beg);
+    RoundRobinScheduler(Input,40, RROutput40);
 
     Input.clear();
     Input.seekg(0, ios::beg);
@@ -379,20 +380,15 @@ int main()
     Input.seekg(0, ios::beg);
     ShortestProcessNext(Input, SPNOutput);
 
-    cout << "After SPN" << endl;
-
-    */
-
-    ofstream HRRNOutput("Myhrrn.out");
+    Input.clear();
+    Input.seekg(0, ios::beg);
     HRRN(Input, HRRNOutput);
-    
+ 
 
     // Not working
     // ofstream FeedbackOutput("Myfeedback");
 
     // Feedback(Input,FeedbackOutput);   
 
-    
-    
     return 0;
 }
