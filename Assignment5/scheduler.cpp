@@ -210,75 +210,62 @@ void SRPScheduler(ifstream& inputFile, ofstream& SRPOutput) {
     SRPOutput.close();
 }
 
-void Feedback(ifstream& inputFile , ofstream& FeedbackOutput)
+void Feedback(ifstream& Input, ofstream& FeedbackOutput) 
 {
-
-    queue<ProcessName> priorityQueues[7];
-
     string name;
-    int arrival;
-    int service;
+    int arrival, service;
+    queue<ProcessName> priorityQueues[7];
+    vector<ProcessName> processes;
 
-    while (inputFile >> name >> arrival >> service) 
+    while (Input >> name >> arrival >> service) 
     {
-        ProcessName process = {name, arrival, service};
-        
-        // Determine initial priority based on arrival time
-        int priority;
-        if (arrival < 10) {
-            priority = 0;
-        } else if (arrival < 20) {
-            priority = 1;
-        } else if (arrival < 30) {
-            priority = 2;
-        } else if (arrival < 40) {
-            priority = 3;
-        } else if (arrival < 50) {
-            priority = 4;
-        } else if (arrival < 60) {
-            priority = 5;
-        } else {
-            priority = 6;
-        }
-
-        priorityQueues[priority].push(process);
+        processes.push_back({name, arrival, service});
     }
 
+    int currentTime = 0;
+    int index = 0;
     bool allEmpty = true;
-do {
-    allEmpty = true;
-    for(int priority = 0; priority <= 6; priority++)
-    {
-        for (int i = 0; i < 7; i++) 
+
+    do {
+        // Add processes to the priority queue that have arrived by the current time
+        while (index < processes.size() && processes[index].ArrivalTime <= currentTime) 
         {
-            if (!priorityQueues[i].empty()) 
+            priorityQueues[0].push(processes[index]);
+            index++;
+        }
+
+        
+        // Check each priority queue starting from the highest
+        for(int priority = 0; priority <= 6; priority++)
+        {
+            if (!priorityQueues[priority].empty())
             {
                 allEmpty = false;
+                ProcessName process = priorityQueues[priority].front();
+                priorityQueues[priority].pop();
+                FeedbackOutput << process.name << endl;
+
+                // Decrement the service time by the quantum
+                process.ServiceTime -= 10;
+
+                // If the process is not finished, move it to the next lower-priority queue
+                if (process.ServiceTime > 0) 
+                {   
+                    if (priority < 6) 
+                    {
+                        priorityQueues[priority + 1].push(process);
+                    } 
+                    else 
+                    {
+                        priorityQueues[priority].push(process);
+                    }
+                }
                 break;
             }
         }
-        if (!priorityQueues[priority].empty())
-        {
-            ProcessName process = priorityQueues[priority].front();
-            priorityQueues[priority].pop();
-            FeedbackOutput << process.name << endl;
-            process.ServiceTime -= 10;
 
-            if (process.ServiceTime > 0) 
-            {   
-                if (priority < 6) 
-                {
-                    priorityQueues[priority + 1].push(process);
-                } 
-                else 
-                {
-                    priorityQueues[priority].push(process);
-                }
-            }
-        }
-    }
-} while (!allEmpty);
-
+        currentTime += 10;
+    } while (!allEmpty && index < processes.size());
 }
 
 void HRRN(ifstream& inputFile , ofstream& HRRNOutput)
