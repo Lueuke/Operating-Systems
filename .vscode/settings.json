@@ -7,6 +7,7 @@
         "xstring": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "vector": "cpp"
     }
 }
