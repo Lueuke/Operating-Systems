@@ -8,6 +8,7 @@
         "iostream": "cpp",
         "istream": "cpp",
         "queue": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "sstream": "cpp"
     }
 }
