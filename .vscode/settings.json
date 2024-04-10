@@ -9,6 +9,7 @@
         "istream": "cpp",
         "queue": "cpp",
         "vector": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "condition_variable": "cpp"
     }
 }
