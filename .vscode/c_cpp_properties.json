@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/Users/luked/Documentscurl-8.7.1/include"
+                "C:/Users/luked/Documents/curl-8.7.1/include"
             ],
             "defines": [
                 "_DEBUG",
