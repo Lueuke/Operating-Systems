@@ -54,11 +54,18 @@ void InputThread()
     curl_global_cleanup();
 }
 
+void OutputThread()
+{
+    
+}
+
 int main(int argc, char* argv[]) 
 {
     SimStart();
 
     thread inputThread(InputThread);
+
+    thread outputThread(OutputThread);
 
     inputThread.join();
 
