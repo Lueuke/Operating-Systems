@@ -3,15 +3,19 @@
 #include <queue>
 #include <thread>
 #include <mutex>
-#include <condition_variable>
 #include <curl/curl.h>
 
 using namespace std;
 
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
+
 void SimStart()
 {
     
-
     curl_global_init(CURL_GLOBAL_ALL);
 
     CURL* curl = curl_easy_init();
@@ -34,7 +38,7 @@ void InputThread()
     while(true)
     {
         curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5432/NextInput");
-        // curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         
         string readBuffer;
 
@@ -59,15 +63,22 @@ void OutputThread()
     
 }
 
+void SchedulerThread()
+{
+    
+}
+
 int main(int argc, char* argv[]) 
 {
     SimStart();
 
     thread inputThread(InputThread);
-
+    thread schedulerThread(SchedulerThread);
     thread outputThread(OutputThread);
-
+    
     inputThread.join();
+    schedulerThread.join();
+    outputThread.join();
 
     return 0;
 }
