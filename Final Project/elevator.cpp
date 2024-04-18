@@ -8,6 +8,8 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <condition_variable>
+#include <atomic>
 using namespace std;
 
 struct Person {
@@ -30,7 +32,7 @@ struct Elevator
 queue<Person> peopleQueue;
 queue<Person> outputQueue;
 vector<Elevator> elevators; 
-
+atomic<bool> stopAllThreads(false);
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -56,7 +58,8 @@ void SimStart()
 
 void SimStop()
 {
-    
+    stopAllThreads == true;
+
     curl_global_init(CURL_GLOBAL_ALL);
 
     CURL* curl = curl_easy_init();
@@ -90,14 +93,15 @@ void CheckSim()
             {
                 cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
             }
-            else if (readBuffer == "Simulation is complete") 
+            // If the simulation is complete, stop the simulation In real test we don't need to call this we can just exit(0) 
+            else if (readBuffer == "Simulation is complete.") 
             {
                 SimStop();
                 break;
             }
 
             readBuffer.clear();
-            this_thread::sleep_for(chrono::seconds(2));
+            this_thread::sleep_for(chrono::seconds(3));
 
         }
         curl_easy_cleanup(curl);
@@ -110,7 +114,7 @@ void InputThread()
     curl_global_init(CURL_GLOBAL_ALL);
     CURL* curl = curl_easy_init();
 
-    while(true)
+    while(!stopAllThreads)
     {
         curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5432/NextInput");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -131,6 +135,8 @@ void InputThread()
                 int id, startFloor, endFloor, timeTick;
                 ss >> id >> Name >> startFloor >> endFloor >> timeTick;
                 peopleQueue.push({Name, startFloor, endFloor, timeTick});
+
+                cout << "Processed Input - Name: " << Name << ", Starting Floor: " << startFloor << ", Ending Floor: " << endFloor << endl;
         }
 
         readBuffer.clear();
@@ -147,7 +153,7 @@ void OutputThread()
     CURL* curl = curl_easy_init();
     string readBuffer;
 
-    while(true)
+    while(!stopAllThreads)
     {
         if (!peopleQueue.empty())
         {
@@ -162,7 +168,7 @@ void OutputThread()
 
             curl_easy_setopt(curl, CURLOPT_URL, putUrl.c_str());
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-
+            cout << "Adding Person " << person.Name << " to elevator " << assignedElevator->Name << endl;
             string data = person.Name + " " + to_string(person.startFloor) + " " + to_string(person.endFloor) + " " + to_string(person.timeTick);
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
 
@@ -179,7 +185,7 @@ void OutputThread()
 
 void SchedulerThread()
 {
-    while (true) {
+    while (!stopAllThreads) {
         if (!peopleQueue.empty()) {
             Person nextPerson = peopleQueue.front();
             peopleQueue.pop();
