@@ -59,5 +59,8 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "workbench.colorCustomizations": {
+        "editorGhostText.foreground": "#ff0000",
+}
 }

@@ -28,6 +28,7 @@ struct Elevator
 };
 
 queue<Person> peopleQueue;
+queue<Person> outputQueue;
 vector<Elevator> elevators; 
 
 
@@ -67,6 +68,40 @@ void SimStop()
 
     curl_easy_cleanup(curl);
     curl_global_cleanup();
+}
+
+void CheckSim()
+{
+        
+        curl_global_init(CURL_GLOBAL_ALL);
+    
+        CURL* curl = curl_easy_init();
+        string readBuffer;
+
+        while(true)
+        {   
+            curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5432/Simulation/check");
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        
+            CURLcode res = curl_easy_perform(curl);
+        
+            if (res != CURLE_OK) 
+            {
+                cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+            }
+            else if (readBuffer == "Simulation is complete") 
+            {
+                SimStop();
+                break;
+            }
+
+            readBuffer.clear();
+            this_thread::sleep_for(chrono::seconds(2));
+
+        }
+        curl_easy_cleanup(curl);
+    
 }
 
 void InputThread()
@@ -125,7 +160,7 @@ void OutputThread()
 
              string putUrl = "http://localhost:5432/AddPersonToElevator/" + to_string(person.id) + "/" + assignedElevator->Name;
 
-            curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5432/NextOutput");
+            curl_easy_setopt(curl, CURLOPT_URL, putUrl.c_str());
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 
             string data = person.Name + " " + to_string(person.startFloor) + " " + to_string(person.endFloor) + " " + to_string(person.timeTick);
@@ -138,14 +173,36 @@ void OutputThread()
                 cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
             }
         }
-        this_thread::sleep_for(chrono::seconds(1));
     }
 
 }
 
 void SchedulerThread()
 {
-    
+    while (true) {
+        if (!peopleQueue.empty()) {
+            Person nextPerson = peopleQueue.front();
+            peopleQueue.pop();
+
+            // Find the elevator that can reach the person the fastest
+            auto fastestElevator = min_element(elevators.begin(), elevators.end(), [&](Elevator a, Elevator b) {
+                return abs(a.currentFloor - nextPerson.startFloor) < abs(b.currentFloor - nextPerson.startFloor);
+            });
+
+            // Check if the elevator has enough capacity for the person
+            if (fastestElevator->totalCapacity > 0) {
+                // Assign the person to the fastest elevator
+                fastestElevator->currentFloor = nextPerson.startFloor;
+                fastestElevator->totalCapacity--;
+
+                // Push the person to the output queue
+                outputQueue.push(nextPerson);
+            }
+
+            // Sleep for a while before the next scheduling decision
+            this_thread::sleep_for(chrono::seconds(1));
+        }
+    }
 }
 
 int main(int argc, char* argv[]) 
@@ -184,10 +241,12 @@ int main(int argc, char* argv[])
     thread inputThread(InputThread);
     thread schedulerThread(SchedulerThread);
     thread outputThread(OutputThread);
+    thread checkSimulationThread(CheckSim);
     
     inputThread.join();
     schedulerThread.join();
     outputThread.join();
+    checkSimulationThread.join();
 
     return 0;
 }
