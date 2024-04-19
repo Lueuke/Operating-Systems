@@ -52,6 +52,11 @@ void SimStart()
 
     CURLcode res = curl_easy_perform(curl);
 
+     if (res != CURLE_OK) 
+        {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+        }
+
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 }
@@ -68,6 +73,11 @@ void SimStop()
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 
     CURLcode res = curl_easy_perform(curl);
+
+    if (res != CURLE_OK) 
+        {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+        }
 
     curl_easy_cleanup(curl);
     curl_global_cleanup();
