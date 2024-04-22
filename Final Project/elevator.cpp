@@ -123,8 +123,8 @@ void InputThread()
     
     curl_global_init(CURL_GLOBAL_ALL);
     CURL* curl = curl_easy_init();
-
-    while(!stopAllThreads)
+    int nextPersonID = 1;
+    while(true)
     {
         curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5432/NextInput");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -141,12 +141,22 @@ void InputThread()
         }
         else {
                 stringstream ss(readBuffer);
-                string Name;
-                int id, startFloor, endFloor, timeTick;
-                ss >> id >> Name >> startFloor >> endFloor >> timeTick;
-                peopleQueue.push({Name, startFloor, endFloor, timeTick});
+            string Name;
+            int startFloor, endFloor, timeTick;
+            ss >> Name >> startFloor >> endFloor >> timeTick;
 
-                cout << "Processed Input - Name: " << Name << ", Starting Floor: " << startFloor << ", Ending Floor: " << endFloor << endl;
+            // Create a new Person object and assign an ID
+            Person person;
+            person.id = nextPersonID++; // Assign ID and increment for the next person
+            person.Name = Name;
+            person.startFloor = startFloor;
+            person.endFloor = endFloor;
+            person.timeTick = timeTick;
+
+            // Add the person to the queue
+            peopleQueue.push(person);
+
+            cout << "Processed Input - Name: " << Name << ", Starting Floor: " << startFloor << ", Ending Floor: " << endFloor << endl;
         }
 
         readBuffer.clear();
@@ -163,7 +173,7 @@ void OutputThread()
     CURL* curl = curl_easy_init();
     string readBuffer;
 
-    while(!stopAllThreads)
+    while(true)
     {
         if (!peopleQueue.empty())
         {
@@ -195,7 +205,7 @@ void OutputThread()
 
 void SchedulerThread()
 {
-    while (!stopAllThreads) {
+    while (true) {
         if (!peopleQueue.empty()) {
             Person nextPerson = peopleQueue.front();
             peopleQueue.pop();
