@@ -19,7 +19,7 @@ public:
     int lowestFloor;
     int highestFloor;
     int currentFloor;
-    int totalCapacity; // Renamed from 'capacity'
+    int totalCapacity; 
     int currentLoad;
     queue<int> destinationFloors; 
     bool isAvailable = true;
@@ -297,52 +297,11 @@ void endSimulation() {
     exit(0);
 }
 
-// Function to calculate distance between two floors
-int calculateDistance(int floor1, int floor2) {
-    return abs(floor1 - floor2);
-}
-
-string findClosestElevator(int startFloor, int endFloor, vector<Elevator>& elevators) {
-    Elevator* optimalElevator = nullptr;
-    int minimalDistance = INT_MAX;
-
-    for (Elevator& elevator : elevators) {
-        // Check if the elevator can reach the person's start and end floors
-        if (elevator.lowestFloor <= startFloor && elevator.highestFloor >= startFloor &&
-            elevator.lowestFloor <= endFloor && elevator.highestFloor >= endFloor) {
-            // Calculate the total distance that the person would have to travel if they were to take this elevator
-            int distanceToStart = abs(elevator.currentFloor - startFloor);
-            int distanceToEnd = 0;
-
-            std::queue<int> tempQueue = elevator.destinationFloors;
-            while (!tempQueue.empty()) {
-                int floor = tempQueue.front();
-                distanceToEnd += calculateDistance(floor, startFloor);
-                if (floor == endFloor) break;
-                tempQueue.pop();
-            }
-
-            int totalDistance = distanceToStart + distanceToEnd;
-
-            // If the total distance is less than the minimal distance found so far, update the optimal elevator
-            if (totalDistance < minimalDistance) {
-                optimalElevator = &elevator;
-                minimalDistance = totalDistance;
-            }
-        }
-    }
-
-    if (optimalElevator) {
-        optimalElevator->currentLoad++;
-        optimalElevator->destinationFloors.push(endFloor);
-        return optimalElevator->id;
-    } else {
-        return std::string();
-    }
-}
-
 
 void schedulerComputationThread(vector<Elevator>& elevators) {
+    int currentElevatorIndex = 0; // Index of the current elevator to assign persons
+    int numElevators = elevators.size();
+
     // This loop runs until the simulation is stopped
     while (true) {
         // Check if there is any received person data
@@ -366,11 +325,28 @@ void schedulerComputationThread(vector<Elevator>& elevators) {
             int startFloor = stoi(startFloorStr);
             int endFloor = stoi(endFloorStr);
 
-            // Find the closest available elevator to the person's current floor
-            string closestElevatorID = findClosestElevator(startFloor, endFloor, elevators);
+            // Find the next available elevator using round-robin scheduling
+            Elevator& currentElevator = elevators[currentElevatorIndex];
+            currentElevatorIndex = (currentElevatorIndex + 1) % numElevators;
 
-            // Push the person ID and closest elevator ID to the shared queue
-            sharedQueue.push({personID, closestElevatorID});
+            // Assign the person to the current elevator
+            if (currentElevator.currentLoad < currentElevator.totalCapacity) {
+                currentElevator.currentLoad++;
+                currentElevator.destinationFloors.push(endFloor);
+                sharedQueue.push({personID, currentElevator.id});
+            } else {
+                // If the current elevator is at full capacity, try the next one
+                for (int i = 0; i < numElevators; ++i) {
+                    currentElevatorIndex = (currentElevatorIndex + 1) % numElevators;
+                    Elevator& nextElevator = elevators[currentElevatorIndex];
+                    if (nextElevator.currentLoad < nextElevator.totalCapacity) {
+                        nextElevator.currentLoad++;
+                        nextElevator.destinationFloors.push(endFloor);
+                        sharedQueue.push({personID, nextElevator.id});
+                        break;
+                    }
+                }
+            }
 
             // Clear received person data after processing
             receivedPersonData.clear();
