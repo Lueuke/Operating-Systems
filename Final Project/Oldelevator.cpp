@@ -1,3 +1,16 @@
+/*
+=============================================================================
+Title : elevator.cpp
+Description : This program communicates the Dr.Rees API to schedule people on an elevator using multithreading .
+Author : Luke Dekan (R#11766388)
+Date : 04/26/2024
+Version : 1.0
+Usage : Compile and run this program using the GNU C++ compiler
+Notes : This program requires that the API is active and that the building file is inputed.
+C++ Version : C++11
+=============================================================================
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -9,72 +22,69 @@
 #include <curl/curl.h>
 #include <vector>
 #include <cmath>
-#include <atomic>
 
 using namespace std;
 
-class Elevator {
+// Create a Class to Store all the Elevator Information
+class Elevator 
+{
 public:
-    std::string id;
+    string id;
     int lowestFloor;
     int highestFloor;
     int currentFloor;
     int totalCapacity; 
-    int currentLoad;
-    queue<int> destinationFloors; 
+    int currentCapacity;
+    priority_queue<int, vector<int>, greater<int>> destinationFloors;
     bool isAvailable = true;
-    // Default constructor
-    Elevator() : id(""), lowestFloor(0), highestFloor(0), currentFloor(0), totalCapacity(0), currentLoad(0) {}
 
-    // Constructor with arguments
-    Elevator(std::string id, int lowestFloor, int highestFloor, int currentFloor, int totalCapacity)
-        : id(id), lowestFloor(lowestFloor), highestFloor(highestFloor), currentFloor(currentFloor), totalCapacity(totalCapacity), currentLoad(0) {}
+    // Default constructor
+    Elevator() : id(""), lowestFloor(0), highestFloor(0), currentFloor(0), totalCapacity(0), currentCapacity(0) {}
+
 };
 
 // Function prototypes
 void inputCommunicationThread();
 void outputCommunicationThread();
 void schedulerComputationThread(vector<Elevator>& elevators);
-void readBuildingConfiguration(const string& filename, vector<Elevator>& elevators);
+void readFile(const string& filename, vector<Elevator>& elevators);
 void startSimulation();
 void endSimulation();
 
-// Global variables
+// Global variables for muxtex , shared data queue
 mutex mtx;
-mutex outputMtx;
-queue<pair<string, string>> elevatorQueue;
-queue<pair<string, string>> sharedQueue; // New variable
-string receivedPersonData;
-atomic<bool> simulationRunning(true);
+queue<pair<string, string>> sharedQueue;
+string PersonData;
 
-
-size_t WriteCallback(void *contents, size_t size, size_t nmemb, string *userp) {
+// Write callback function for cURL
+size_t WriteCallback(void *contents, size_t size, size_t nmemb, string *userp) 
+{
     userp->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
 
+// Main function
+int main(int argc, char* argv[]) 
+{
 
-int main(int argc, char* argv[]) {
-    // Check if the building configuration file path is provided as a command line argument
-    if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <path_to_building_file>" << endl;
+    // Take building Input and create Elevator vector 
+    string buildingFilePath = argv[1];
+
+    vector<Elevator> elevators;
+
+    ifstream Input(buildingFilePath);
+
+    if (!Input) 
+    {
+        cout << "ERROR No input file" << endl;
         return 1;
     }
 
-    // Get the building configuration file path
-    string buildingFilePath = argv[1];
-
-    // Vector to store elevator data
-    vector<Elevator> elevators;
-
-    ifstream file(buildingFilePath);
-    string line;
     // Read the building configuration data
-    readBuildingConfiguration(buildingFilePath, elevators);
+    readFile(buildingFilePath, elevators);
 
+    // Start the simulation
     startSimulation();
-
-    
 
     // Start the threads
     thread inputThread(inputCommunicationThread);
@@ -89,11 +99,16 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void readBuildingConfiguration(const string& filename, vector<Elevator>& elevators) {
-    ifstream file(filename);
-    if (file.is_open()) {
+// Function to read the building input file and store all information in the Elevator vector
+void readFile(const string& filename, vector<Elevator>& elevators) 
+{
+    ifstream Input(filename);
+
+    if (Input.is_open()) 
+    {
         string line;
-        while (getline(file, line)) {
+
+        while (getline(Input, line)) {
             stringstream ss(line);
             Elevator elevator;
 
@@ -107,43 +122,42 @@ void readBuildingConfiguration(const string& filename, vector<Elevator>& elevato
             ss >> elevator.totalCapacity;
 
             elevators.push_back(elevator);
-        }
-        file.close();
-    } else {
-        cerr << "Error: Unable to open file " << filename << endl;
-    }
+        }  
+    } 
+    Input.close();
 }
 
-void startSimulation() {
 
-    simulationRunning = true;
-    // Initialize cURL
+// Start the Simulation
+void startSimulation() 
+{
+
+    // Make a PUT Request to start the Simulation
     curl_global_init(CURL_GLOBAL_ALL);
     CURL *curl = curl_easy_init();
 
-    // Set the base URL for the API
     string baseUrl = "http://localhost:5432";
 
     // Start the simulation by making a PUT request to /Simulation/start
     string startUrl = baseUrl + "/Simulation/start";
     CURLcode res;
 
-    // Buffer to store the response
     string responseBuffer;
 
-    if(curl) {
+    if(curl) 
+    {
         curl_easy_setopt(curl, CURLOPT_URL, startUrl.c_str());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 
-        // Set up the write callback function to handle the response
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
         res = curl_easy_perform(curl);
-        if(res != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        else
-            cout << "Response from server: " << responseBuffer << endl;
+
+        if (res != CURLE_OK) 
+        {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+        }
 
         curl_easy_cleanup(curl);
     }
@@ -151,208 +165,246 @@ void startSimulation() {
 }
 
 
-void inputCommunicationThread() {
-    // Initialize cURL
+// Function to get the next input from the API
+void inputCommunicationThread() 
+{
     curl_global_init(CURL_GLOBAL_ALL);
     CURL *curl = curl_easy_init();
 
-    // Set the base URL for the API
     string baseUrl = "http://localhost:5432";
 
-    // Simulate communication with the elevator simulation OS
-    // This loop runs until the simulation is stopped
-    while (true) {
-        // Simulate delay to avoid overwhelming the system with requests
+    // Make a GET request to the API to get the next person data
+    while (true) 
+    {
+        // Delay to avoid overloading the API
+         this_thread::sleep_for(chrono::milliseconds(100));
 
-        // Initialize cURL request
         CURLcode res;
         string url = baseUrl + "/NextInput";
         string responseData;
-        if (curl) {
+
+        if (curl) 
+        {
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseData);
 
-            // Perform the API request
             res = curl_easy_perform(curl);
 
-            // Check for errors
-            if (res != CURLE_OK) {
+            
+            if (res != CURLE_OK) 
+            {
                 cerr << "Error calling API: " << curl_easy_strerror(res) << endl;
-            } else {
-                // Check the received response
-                if (responseData == "NONE") {
+            } 
+            else 
+            {
+                // If there is no data sleep
+                if (responseData == "NONE") 
+                {
                      this_thread::sleep_for(chrono::milliseconds(500));
-                } else {
+                } 
+                else
+                {
                     // Parse the received person data
                     istringstream iss(responseData);
-                    string personID, startFloor, endFloor, _;
-                    getline(iss, personID, '\t');
+                    string personName, startFloor, endFloor, _;
+                    getline(iss, personName, '\t');
                     getline(iss, startFloor, '\t');
                     getline(iss, endFloor, '\t');
-                   char newline;
+                    char newline;
                     iss.get(newline);
 
-                    // Process the person data as needed
-                    cout << "Received person data: PersonID: " << personID << ", Start Floor: " << startFloor << ", End Floor: " << endFloor << endl;
-                    
-                    // Here you can do further processing or pass the data to the scheduler computation thread
-                    // For now, let's store it in the shared variable
-                    mtx.lock(); // Lock mutex before accessing shared data
-                    receivedPersonData = responseData;
-                    mtx.unlock(); // Unlock mutex after accessing shared data
+                
+                    mtx.lock(); 
+                    PersonData = responseData;
+                    mtx.unlock(); 
                 }
             }
         }
     }
-    // Clean up cURL
+
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 }
 
-void outputCommunicationThread() {
-    // Initialize cURL
+// Function to output the communication to the API
+void outputCommunicationThread() 
+{
+    
     curl_global_init(CURL_GLOBAL_ALL);
     CURL *curl = curl_easy_init();
 
     // Counter for checking the simulation status
     int counter = 0;
 
-    // This loop runs until the simulation is stopped
-    while (simulationRunning) {
-        // Check if there is any data in the shared queue
+    
+    while (true) {
+        
         if (!sharedQueue.empty()) {
-            // Lock mutex before accessing shared data
+            
             mtx.lock();
 
-            // Get the person ID and elevator ID from the shared queue
+            // Get the information of the person and the elevator from the shared queue
             pair<string, string> data = sharedQueue.front();
             sharedQueue.pop();
 
-            // Unlock mutex after accessing shared data
+            
             mtx.unlock();
 
             // Make a PUT request to the API to add the person to the elevator
-            if(curl) {
+            if(curl) 
+            {
                 string url = "http://localhost:5432/AddPersonToElevator/" + data.first + "/" + data.second;
                 curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
                 curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
                 CURLcode res = curl_easy_perform(curl);
-                if(res != CURLE_OK)
-                    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                if (res != CURLE_OK) 
+                {
+                cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+                }
             }
         }
 
-        if (counter >= 1000) { // Check the simulation status every 1000 iterations
-            // Check the status of the simulation
+        // Check the simulation status ocassionally using a counter
+        if (counter >= 1000)
+         { 
+            
             string url = "http://localhost:5432/Simulation/check";
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
 
-            // Set up the callback function to handle the HTTP response
+           
             std::string readBuffer;
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
             CURLcode res = curl_easy_perform(curl);
-            if(res != CURLE_OK) {
-                fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+           if (res != CURLE_OK) 
+            {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
             }
-            else {
-                // If the simulation is complete, stop the simulation
-                if (readBuffer == "Simulation is complete.") {
+            else 
+            {
+                // End Simulation if the simulation is complete
+                if (readBuffer == "Simulation is complete.") 
+                {
                     endSimulation();
                     break;
                 }
             }
+
             this_thread::sleep_for(std::chrono::seconds(1));
-            // Reset the counter
+            
             counter = 0;
         }
 
-        // Increment the counter
         counter++;
     }
 
-    // Clean up cURL
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 }
 
 // Function to end the simulation
-void endSimulation() {
-    simulationRunning = false;
+void endSimulation() 
+{
 
     // Make a PUT request to the API to stop the simulation
     CURL *curl = curl_easy_init();
-    if(curl) {
+    if(curl) 
+    {
         string url = "http://localhost:5432/Simulation/stop";
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
         CURLcode res = curl_easy_perform(curl);
-        if(res != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+
+        if (res != CURLE_OK) 
+        {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res);
+        }
         curl_easy_cleanup(curl);
     }
     exit(0);
 }
 
+// Function Scheduler people
+void schedulerComputationThread(vector<Elevator>& elevators) 
+{
 
-void schedulerComputationThread(vector<Elevator>& elevators) {
-    int currentElevatorIndex = 0; // Index of the current elevator to assign persons
-    int numElevators = elevators.size();
-
-    // This loop runs until the simulation is stopped
-    while (true) {
-        // Check if there is any received person data
-        if (!receivedPersonData.empty()) {
-            // Lock mutex before accessing shared data
+    while (true) 
+    {
+        
+        if (!PersonData.empty()) 
+        {
+            
             mtx.lock();
 
             // Parse the received person data
-            istringstream iss(receivedPersonData);
-            string personID, floors;
-            getline(iss, personID, '|'); // Parse person ID
-            getline(iss, floors); // Parse floors (start and end)
+            istringstream iss(PersonData);
+            string personName, floors;
+            getline(iss, personName, '|'); 
+            getline(iss, floors); 
 
             // Extract start and end floors from the parsed string
             istringstream floorsStream(floors);
             string startFloorStr, endFloorStr;
-            getline(floorsStream, startFloorStr, '|'); // Get start floor
-            getline(floorsStream, endFloorStr, '|'); // Get end floor
+            getline(floorsStream, startFloorStr, '|'); 
+            getline(floorsStream, endFloorStr, '|');
 
             // Convert start and end floor strings to integers
             int startFloor = stoi(startFloorStr);
             int endFloor = stoi(endFloorStr);
 
-            // Find the next available elevator using round-robin scheduling
-            Elevator& currentElevator = elevators[currentElevatorIndex];
-            currentElevatorIndex = (currentElevatorIndex + 1) % numElevators;
-
-            // Assign the person to the current elevator
-            if (currentElevator.currentLoad < currentElevator.totalCapacity) {
-                currentElevator.currentLoad++;
-                currentElevator.destinationFloors.push(endFloor);
-                sharedQueue.push({personID, currentElevator.id});
-            } else {
-                // If the current elevator is at full capacity, try the next one
-                for (int i = 0; i < numElevators; ++i) {
-                    currentElevatorIndex = (currentElevatorIndex + 1) % numElevators;
-                    Elevator& nextElevator = elevators[currentElevatorIndex];
-                    if (nextElevator.currentLoad < nextElevator.totalCapacity) {
-                        nextElevator.currentLoad++;
-                        nextElevator.destinationFloors.push(endFloor);
-                        sharedQueue.push({personID, nextElevator.id});
-                        break;
-                    }
-                }
+            // Find the elevator closest to the person's start floor
+            Elevator* closestElevator = findClosestElevator(startFloor, endFloor, elevators);
+            if (closestElevator == nullptr) 
+            {
+                // skip person
+                mtx.unlock();
+                continue;
             }
 
-            // Clear received person data after processing
-            receivedPersonData.clear();
+            closestElevator->currentCapacity++;
 
-            // Unlock mutex after accessing shared data
+            // Push the person's name and the elevator's ID to the shared queue for output thread
+            sharedQueue.push({personName, closestElevator->id});
+
+            // Clear received person data after processing
+            PersonData.clear();
+
             mtx.unlock();
+
+            
         }
     }
 }
+
+// Function to find the closest elevator to the person's start floor 
+Elevator* findClosestElevator(int startFloor, int endFloor, std::vector<Elevator>& elevators) 
+{
+    
+    Elevator* bestElevator = nullptr;
+    int ShortestDistance = INT_MAX;
+    int minCapacity = INT_MAX;
+    
+    // Find the closest elevator that is available and can reach the person's start floor based off the current elevator's floor and capacity
+    for (auto& elevator : elevators) 
+    {
+        if (!elevator.id.empty() && elevator.isAvailable && elevator.lowestFloor <= endFloor && elevator.highestFloor >= endFloor) 
+        {
+            int distance = abs(elevator.currentFloor - startFloor);
+
+            if (distance < ShortestDistance || (distance == ShortestDistance && elevator.currentCapacity < minCapacity)) 
+            {
+                ShortestDistance = distance;
+                minCapacity = elevator.currentCapacity;
+                bestElevator = &elevator;
+
+            }
+        }
+    }
+
+    // Either return the closest elevator or the first elevator if no elevator is available
+    return bestElevator ? bestElevator : &elevators[0];
+}
+
