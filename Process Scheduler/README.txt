@@ -1,0 +1,2 @@
+This is an Assingment I had for my Operating Systems Class we were tasked with creating the Process Scheduling algorithms in C++ givin and input then outputing to sperate 
+files using the different scheduling algorithms
